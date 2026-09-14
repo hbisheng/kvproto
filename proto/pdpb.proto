@@ -626,6 +626,40 @@ message ChangeSplit {
   bool auto_split_enabled = 1;
 }
 
+// KeyspaceResetPurpose identifies the durable PD workflow that owns a reset.
+enum KeyspaceResetPurpose {
+  RECLAIM = 0;
+  CREATE = 1;
+}
+
+// KeyspaceReset asks the target Region leader to replace the full keyspace
+// Region with an empty snapshot. The generation and restore-version pairs are
+// compare-and-set fences; retries of one durable intent must reuse every field.
+message KeyspaceReset {
+  KeyspaceResetPurpose purpose = 1;
+  uint32 keyspace_id = 2;
+  uint64 expected_generation = 3;
+  uint64 generation = 4;
+  uint64 expected_restore_version = 5;
+  uint64 restore_version = 6;
+  // Zero while CREATE peers are proposing an encryption metadata candidate.
+  uint64 encryption_meta_file_id = 7;
+}
+
+// KeyspaceResetStatus reports the locally applied shard state. PD accepts it
+// only when the Region membership and epoch still match its current topology.
+message KeyspaceResetStatus {
+  uint64 region_id = 1;
+  uint64 peer_id = 2;
+  uint32 keyspace_id = 3;
+  uint64 generation = 4;
+  uint64 restore_version = 5;
+  uint64 encryption_meta_file_id = 6;
+  bool key_ready = 7;
+  uint64 region_version = 8;
+  uint64 conf_ver = 9;
+}
+
 message RegionHeartbeatResponse {
   ResponseHeader header = 1;
 
@@ -663,6 +697,8 @@ message RegionHeartbeatResponse {
   ChangePeerV2 change_peer_v2 = 9;
   BatchSwitchWitness switch_witnesses = 10;
   ChangeSplit change_split = 11;
+  // Downstream keyspace reclamation extension.
+  KeyspaceReset keyspace_reset = 1200;
 }
 
 message AskSplitRequest {
@@ -816,6 +852,9 @@ message StoreStats {
   repeated DfsStatItem dfs = 31;
   // True if the store is undergoing graceful shutdown.
   bool is_stopping = 32;
+
+  // Bounded per-peer applied states for active keyspace reset workflows.
+  repeated KeyspaceResetStatus keyspace_reset_statuses = 1200;
 
   // Reserved for a downstream fork
   reserved 1000 to 1199;

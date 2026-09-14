@@ -33,6 +33,22 @@ service Keyspace {
   rpc WatchKeyspaces(WatchKeyspacesRequest) returns (stream WatchKeyspacesResponse) {}
   rpc UpdateKeyspaceState(UpdateKeyspaceStateRequest) returns (UpdateKeyspaceStateResponse) {}
   rpc GetAllKeyspaces(GetAllKeyspacesRequest) returns (GetAllKeyspacesResponse) {}
+  // SelectKeyspaceEncryptionMetaFile atomically chooses the immutable CMEK
+  // metadata file for one pending reused-keyspace CREATE reset.
+  rpc SelectKeyspaceEncryptionMetaFile(SelectKeyspaceEncryptionMetaFileRequest) returns (SelectKeyspaceEncryptionMetaFileResponse) {}
+}
+
+message SelectKeyspaceEncryptionMetaFileRequest {
+  pdpb.RequestHeader header = 1;
+  uint32 keyspace_id = 2;
+  uint64 generation = 3;
+  uint64 restore_version = 4;
+  uint64 candidate_file_id = 5;
+}
+
+message SelectKeyspaceEncryptionMetaFileResponse {
+  pdpb.ResponseHeader header = 1;
+  uint64 selected_file_id = 2;
 }
 
 message KeyspaceMeta {
