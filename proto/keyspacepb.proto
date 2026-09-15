@@ -81,7 +81,8 @@ enum KeyspaceTaskPhase {
 }
 
 // KeyspaceTask is returned atomically with KeyspaceMeta by LoadKeyspaceByID.
-// CSE may execute RestoreShard only for KEYSPACE_TASK_RECLAIM.
+// CSE may execute RestoreShard only for immutable RECLAIM or VALIDATE_REUSE
+// authorizations; PREPARE_RECLAIM is notification and reporting only.
 message KeyspaceTask {
   KeyspaceTaskPhase phase = 1;
   uint32 keyspace_id = 2;
