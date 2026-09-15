@@ -372,7 +372,8 @@ func (*KeyspaceMeta) XXX_OneofWrappers() []interface{} {
 }
 
 // KeyspaceTask is returned atomically with KeyspaceMeta by LoadKeyspaceByID.
-// CSE may execute RestoreShard only for KEYSPACE_TASK_RECLAIM.
+// CSE may execute RestoreShard only for immutable RECLAIM or VALIDATE_REUSE
+// authorizations; PREPARE_RECLAIM is notification and reporting only.
 type KeyspaceTask struct {
 	Phase                  KeyspaceTaskPhase `protobuf:"varint,1,opt,name=phase,proto3,enum=keyspacepb.KeyspaceTaskPhase" json:"phase,omitempty"`
 	KeyspaceId             uint32            `protobuf:"varint,2,opt,name=keyspace_id,json=keyspaceId,proto3" json:"keyspace_id,omitempty"`
