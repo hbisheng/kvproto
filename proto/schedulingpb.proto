@@ -76,6 +76,7 @@ message StoreHeartbeatRequest {
 message StoreHeartbeatResponse {
   ResponseHeader header = 1;
   string cluster_version = 2;
+  repeated pdpb.KeyspaceStateRequest keyspace_state_requests = 1200;
 }
 
 message RegionHeartbeatRequest {
@@ -146,9 +147,8 @@ message RegionHeartbeatResponse {
   pdpb.ChangePeerV2 change_peer_v2 = 9;
   pdpb.BatchSwitchWitness switch_witnesses = 10;
   pdpb.ChangeSplit change_split = 11;
-  // Downstream keyspace reclamation extension. Scheduling-service mode does
-  // not currently execute it, but forwarding must preserve the field.
-  pdpb.KeyspaceReset keyspace_reset = 1200;
+  // Notification only; forwarding must preserve this field.
+  bool keyspace_update_required = 1200;
 }
 
 message ScatterRegionsRequest {

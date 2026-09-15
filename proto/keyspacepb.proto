@@ -33,22 +33,6 @@ service Keyspace {
   rpc WatchKeyspaces(WatchKeyspacesRequest) returns (stream WatchKeyspacesResponse) {}
   rpc UpdateKeyspaceState(UpdateKeyspaceStateRequest) returns (UpdateKeyspaceStateResponse) {}
   rpc GetAllKeyspaces(GetAllKeyspacesRequest) returns (GetAllKeyspacesResponse) {}
-  // SelectKeyspaceEncryptionMetaFile atomically chooses the immutable CMEK
-  // metadata file for one pending reused-keyspace CREATE reset.
-  rpc SelectKeyspaceEncryptionMetaFile(SelectKeyspaceEncryptionMetaFileRequest) returns (SelectKeyspaceEncryptionMetaFileResponse) {}
-}
-
-message SelectKeyspaceEncryptionMetaFileRequest {
-  pdpb.RequestHeader header = 1;
-  uint32 keyspace_id = 2;
-  uint64 generation = 3;
-  uint64 restore_version = 4;
-  uint64 candidate_file_id = 5;
-}
-
-message SelectKeyspaceEncryptionMetaFileResponse {
-  pdpb.ResponseHeader header = 1;
-  uint64 selected_file_id = 2;
 }
 
 message KeyspaceMeta {
@@ -63,6 +47,33 @@ message KeyspaceMeta {
   int64 created_at = 4;
   int64 state_changed_at = 5;
   map<string, string> config = 7;
+  // PD-owned incarnation fence. Legacy metadata reads as generation zero.
+  uint64 generation = 9;
+  // Minimum RestoreShard version known to have been applied for this keyspace.
+  uint64 restore_version = 10;
+}
+
+// KeyspaceTaskPhase distinguishes notification-only preparation/validation
+// from the single phase that authorizes a destructive reclaim reset.
+enum KeyspaceTaskPhase {
+  KEYSPACE_TASK_NONE = 0;
+  KEYSPACE_TASK_PREPARE_RECLAIM = 1;
+  KEYSPACE_TASK_RECLAIM = 2;
+  KEYSPACE_TASK_VALIDATE_REUSE = 3;
+}
+
+// KeyspaceTask is returned atomically with KeyspaceMeta by LoadKeyspaceByID.
+// CSE may execute RestoreShard only for KEYSPACE_TASK_RECLAIM.
+message KeyspaceTask {
+  KeyspaceTaskPhase phase = 1;
+  uint32 keyspace_id = 2;
+  uint64 expected_generation = 3;
+  uint64 generation = 4;
+  uint64 expected_restore_version = 5;
+  uint64 restore_version = 6;
+  uint64 region_id = 7;
+  uint64 region_version = 8;
+  uint64 conf_ver = 9;
 }
 
 enum KeyspaceState {
@@ -153,6 +164,8 @@ message LoadKeyspaceByIDRequest {
 message LoadKeyspaceResponse {
   pdpb.ResponseHeader header = 1;
   KeyspaceMeta keyspace = 2;
+  // Present only while a durable reclaim/reuse task is active for this ID.
+  KeyspaceTask task = 3;
 }
 
 message LookupKeyspaceRequest {
