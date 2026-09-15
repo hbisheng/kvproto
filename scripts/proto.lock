@@ -11114,6 +11114,51 @@
         ],
         "messages": [
           {
+            "name": "SelectKeyspaceEncryptionMetaFileRequest",
+            "fields": [
+              {
+                "id": 1,
+                "name": "header",
+                "type": "pdpb.RequestHeader"
+              },
+              {
+                "id": 2,
+                "name": "keyspace_id",
+                "type": "uint32"
+              },
+              {
+                "id": 3,
+                "name": "generation",
+                "type": "uint64"
+              },
+              {
+                "id": 4,
+                "name": "restore_version",
+                "type": "uint64"
+              },
+              {
+                "id": 5,
+                "name": "candidate_file_id",
+                "type": "uint64"
+              }
+            ]
+          },
+          {
+            "name": "SelectKeyspaceEncryptionMetaFileResponse",
+            "fields": [
+              {
+                "id": 1,
+                "name": "header",
+                "type": "pdpb.ResponseHeader"
+              },
+              {
+                "id": 2,
+                "name": "selected_file_id",
+                "type": "uint64"
+              }
+            ]
+          },
+          {
             "name": "KeyspaceMeta",
             "fields": [
               {
@@ -11216,6 +11261,11 @@
               {
                 "id": 9,
                 "name": "conf_ver",
+                "type": "uint64"
+              },
+              {
+                "id": 10,
+                "name": "encryption_meta_file_id",
                 "type": "uint64"
               }
             ]
@@ -11687,6 +11737,11 @@
                 "name": "GetAllKeyspaces",
                 "in_type": "GetAllKeyspacesRequest",
                 "out_type": "GetAllKeyspacesResponse"
+              },
+              {
+                "name": "SelectKeyspaceEncryptionMetaFile",
+                "in_type": "SelectKeyspaceEncryptionMetaFileRequest",
+                "out_type": "SelectKeyspaceEncryptionMetaFileResponse"
               }
             ]
           }
@@ -19080,6 +19135,16 @@
                 "id": 7,
                 "name": "conf_ver",
                 "type": "uint64"
+              },
+              {
+                "id": 8,
+                "name": "encryption_meta_file_id",
+                "type": "uint64"
+              },
+              {
+                "id": 9,
+                "name": "key_ready",
+                "type": "bool"
               }
             ]
           },

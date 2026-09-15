@@ -636,6 +636,8 @@ message KeyspaceStateStatus {
   uint64 restore_version = 5;
   uint64 region_version = 6;
   uint64 conf_ver = 7;
+  uint64 encryption_meta_file_id = 8;
+  bool key_ready = 9;
 }
 
 // KeyspaceStateRequest asks one store to report a specific local peer state.
