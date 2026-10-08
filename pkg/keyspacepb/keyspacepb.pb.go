@@ -30,41 +30,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-// KeyspaceTaskPhase distinguishes notification-only preparation from the two
-// phases that authorize constrained empty resets.
-type KeyspaceTaskPhase int32
-
-const (
-	KeyspaceTaskPhase_KEYSPACE_TASK_NONE            KeyspaceTaskPhase = 0
-	KeyspaceTaskPhase_KEYSPACE_TASK_PREPARE_RECLAIM KeyspaceTaskPhase = 1
-	KeyspaceTaskPhase_KEYSPACE_TASK_RECLAIM         KeyspaceTaskPhase = 2
-	// Kept for wire compatibility; this phase now authorizes the reused-Create
-	// reset and its name describes the final validation that completes Create.
-	KeyspaceTaskPhase_KEYSPACE_TASK_VALIDATE_REUSE KeyspaceTaskPhase = 3
-)
-
-var KeyspaceTaskPhase_name = map[int32]string{
-	0: "KEYSPACE_TASK_NONE",
-	1: "KEYSPACE_TASK_PREPARE_RECLAIM",
-	2: "KEYSPACE_TASK_RECLAIM",
-	3: "KEYSPACE_TASK_VALIDATE_REUSE",
-}
-
-var KeyspaceTaskPhase_value = map[string]int32{
-	"KEYSPACE_TASK_NONE":            0,
-	"KEYSPACE_TASK_PREPARE_RECLAIM": 1,
-	"KEYSPACE_TASK_RECLAIM":         2,
-	"KEYSPACE_TASK_VALIDATE_REUSE":  3,
-}
-
-func (x KeyspaceTaskPhase) String() string {
-	return proto.EnumName(KeyspaceTaskPhase_name, int32(x))
-}
-
-func (KeyspaceTaskPhase) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{0}
-}
-
 type KeyspaceState int32
 
 const (
@@ -72,6 +37,10 @@ const (
 	KeyspaceState_DISABLED  KeyspaceState = 1
 	KeyspaceState_ARCHIVED  KeyspaceState = 2
 	KeyspaceState_TOMBSTONE KeyspaceState = 3
+	// Internal reuse lifecycle; not accepted by UpdateKeyspaceState.
+	KeyspaceState_RECLAIMING KeyspaceState = 4
+	KeyspaceState_RECLAIMED  KeyspaceState = 5
+	KeyspaceState_CREATING   KeyspaceState = 6
 )
 
 var KeyspaceState_name = map[int32]string{
@@ -79,13 +48,19 @@ var KeyspaceState_name = map[int32]string{
 	1: "DISABLED",
 	2: "ARCHIVED",
 	3: "TOMBSTONE",
+	4: "RECLAIMING",
+	5: "RECLAIMED",
+	6: "CREATING",
 }
 
 var KeyspaceState_value = map[string]int32{
-	"ENABLED":   0,
-	"DISABLED":  1,
-	"ARCHIVED":  2,
-	"TOMBSTONE": 3,
+	"ENABLED":    0,
+	"DISABLED":   1,
+	"ARCHIVED":   2,
+	"TOMBSTONE":  3,
+	"RECLAIMING": 4,
+	"RECLAIMED":  5,
+	"CREATING":   6,
 }
 
 func (x KeyspaceState) String() string {
@@ -93,139 +68,7 @@ func (x KeyspaceState) String() string {
 }
 
 func (KeyspaceState) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{1}
-}
-
-type SelectKeyspaceEncryptionMetaFileRequest struct {
-	Header          *pdpb.RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	KeyspaceId      uint32              `protobuf:"varint,2,opt,name=keyspace_id,json=keyspaceId,proto3" json:"keyspace_id,omitempty"`
-	Generation      uint64              `protobuf:"varint,3,opt,name=generation,proto3" json:"generation,omitempty"`
-	RestoreVersion  uint64              `protobuf:"varint,4,opt,name=restore_version,json=restoreVersion,proto3" json:"restore_version,omitempty"`
-	CandidateFileId uint64              `protobuf:"varint,5,opt,name=candidate_file_id,json=candidateFileId,proto3" json:"candidate_file_id,omitempty"`
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) Reset() {
-	*m = SelectKeyspaceEncryptionMetaFileRequest{}
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) String() string { return proto.CompactTextString(m) }
-func (*SelectKeyspaceEncryptionMetaFileRequest) ProtoMessage()    {}
-func (*SelectKeyspaceEncryptionMetaFileRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5c5d91f3e5071166, []int{0}
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_SelectKeyspaceEncryptionMetaFileRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SelectKeyspaceEncryptionMetaFileRequest.Merge(m, src)
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_SelectKeyspaceEncryptionMetaFileRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SelectKeyspaceEncryptionMetaFileRequest proto.InternalMessageInfo
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) GetHeader() *pdpb.RequestHeader {
-	if m != nil {
-		return m.Header
-	}
-	return nil
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) GetKeyspaceId() uint32 {
-	if m != nil {
-		return m.KeyspaceId
-	}
-	return 0
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) GetGeneration() uint64 {
-	if m != nil {
-		return m.Generation
-	}
-	return 0
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) GetRestoreVersion() uint64 {
-	if m != nil {
-		return m.RestoreVersion
-	}
-	return 0
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) GetCandidateFileId() uint64 {
-	if m != nil {
-		return m.CandidateFileId
-	}
-	return 0
-}
-
-type SelectKeyspaceEncryptionMetaFileResponse struct {
-	Header         *pdpb.ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	SelectedFileId uint64               `protobuf:"varint,2,opt,name=selected_file_id,json=selectedFileId,proto3" json:"selected_file_id,omitempty"`
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) Reset() {
-	*m = SelectKeyspaceEncryptionMetaFileResponse{}
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) String() string { return proto.CompactTextString(m) }
-func (*SelectKeyspaceEncryptionMetaFileResponse) ProtoMessage()    {}
-func (*SelectKeyspaceEncryptionMetaFileResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{1}
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_SelectKeyspaceEncryptionMetaFileResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SelectKeyspaceEncryptionMetaFileResponse.Merge(m, src)
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_SelectKeyspaceEncryptionMetaFileResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SelectKeyspaceEncryptionMetaFileResponse proto.InternalMessageInfo
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) GetHeader() *pdpb.ResponseHeader {
-	if m != nil {
-		return m.Header
-	}
-	return nil
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) GetSelectedFileId() uint64 {
-	if m != nil {
-		return m.SelectedFileId
-	}
-	return 0
 }
 
 type KeyspaceMeta struct {
@@ -238,17 +81,13 @@ type KeyspaceMeta struct {
 	CreatedAt      int64                   `protobuf:"varint,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	StateChangedAt int64                   `protobuf:"varint,5,opt,name=state_changed_at,json=stateChangedAt,proto3" json:"state_changed_at,omitempty"`
 	Config         map[string]string       `protobuf:"bytes,7,rep,name=config,proto3" json:"config,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// PD-owned incarnation fence. Legacy metadata reads as generation zero.
-	Generation uint64 `protobuf:"varint,9,opt,name=generation,proto3" json:"generation,omitempty"`
-	// Minimum RestoreShard version known to have been applied for this keyspace.
-	RestoreVersion uint64 `protobuf:"varint,10,opt,name=restore_version,json=restoreVersion,proto3" json:"restore_version,omitempty"`
 }
 
 func (m *KeyspaceMeta) Reset()         { *m = KeyspaceMeta{} }
 func (m *KeyspaceMeta) String() string { return proto.CompactTextString(m) }
 func (*KeyspaceMeta) ProtoMessage()    {}
 func (*KeyspaceMeta) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{2}
+	return fileDescriptor_5c5d91f3e5071166, []int{0}
 }
 func (m *KeyspaceMeta) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -349,147 +188,12 @@ func (m *KeyspaceMeta) GetConfig() map[string]string {
 	return nil
 }
 
-func (m *KeyspaceMeta) GetGeneration() uint64 {
-	if m != nil {
-		return m.Generation
-	}
-	return 0
-}
-
-func (m *KeyspaceMeta) GetRestoreVersion() uint64 {
-	if m != nil {
-		return m.RestoreVersion
-	}
-	return 0
-}
-
 // XXX_OneofWrappers is for the internal use of the proto package.
 func (*KeyspaceMeta) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
 		(*KeyspaceMeta_Id)(nil),
 		(*KeyspaceMeta_KeyspaceIdentity)(nil),
 	}
-}
-
-// KeyspaceTask is returned atomically with KeyspaceMeta by LoadKeyspaceByID.
-// CSE may execute RestoreShard only for immutable RECLAIM or VALIDATE_REUSE
-// authorizations; PREPARE_RECLAIM is notification and reporting only.
-type KeyspaceTask struct {
-	Phase                  KeyspaceTaskPhase `protobuf:"varint,1,opt,name=phase,proto3,enum=keyspacepb.KeyspaceTaskPhase" json:"phase,omitempty"`
-	KeyspaceId             uint32            `protobuf:"varint,2,opt,name=keyspace_id,json=keyspaceId,proto3" json:"keyspace_id,omitempty"`
-	ExpectedGeneration     uint64            `protobuf:"varint,3,opt,name=expected_generation,json=expectedGeneration,proto3" json:"expected_generation,omitempty"`
-	Generation             uint64            `protobuf:"varint,4,opt,name=generation,proto3" json:"generation,omitempty"`
-	ExpectedRestoreVersion uint64            `protobuf:"varint,5,opt,name=expected_restore_version,json=expectedRestoreVersion,proto3" json:"expected_restore_version,omitempty"`
-	RestoreVersion         uint64            `protobuf:"varint,6,opt,name=restore_version,json=restoreVersion,proto3" json:"restore_version,omitempty"`
-	RegionId               uint64            `protobuf:"varint,7,opt,name=region_id,json=regionId,proto3" json:"region_id,omitempty"`
-	RegionVersion          uint64            `protobuf:"varint,8,opt,name=region_version,json=regionVersion,proto3" json:"region_version,omitempty"`
-	ConfVer                uint64            `protobuf:"varint,9,opt,name=conf_ver,json=confVer,proto3" json:"conf_ver,omitempty"`
-	// Immutable single-winner CMEK metadata file selected for CREATE_REUSE.
-	// Zero means that CSE must prepare a candidate and select it through PD.
-	EncryptionMetaFileId uint64 `protobuf:"varint,10,opt,name=encryption_meta_file_id,json=encryptionMetaFileId,proto3" json:"encryption_meta_file_id,omitempty"`
-}
-
-func (m *KeyspaceTask) Reset()         { *m = KeyspaceTask{} }
-func (m *KeyspaceTask) String() string { return proto.CompactTextString(m) }
-func (*KeyspaceTask) ProtoMessage()    {}
-func (*KeyspaceTask) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{3}
-}
-func (m *KeyspaceTask) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *KeyspaceTask) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_KeyspaceTask.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *KeyspaceTask) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_KeyspaceTask.Merge(m, src)
-}
-func (m *KeyspaceTask) XXX_Size() int {
-	return m.Size()
-}
-func (m *KeyspaceTask) XXX_DiscardUnknown() {
-	xxx_messageInfo_KeyspaceTask.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_KeyspaceTask proto.InternalMessageInfo
-
-func (m *KeyspaceTask) GetPhase() KeyspaceTaskPhase {
-	if m != nil {
-		return m.Phase
-	}
-	return KeyspaceTaskPhase_KEYSPACE_TASK_NONE
-}
-
-func (m *KeyspaceTask) GetKeyspaceId() uint32 {
-	if m != nil {
-		return m.KeyspaceId
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetExpectedGeneration() uint64 {
-	if m != nil {
-		return m.ExpectedGeneration
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetGeneration() uint64 {
-	if m != nil {
-		return m.Generation
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetExpectedRestoreVersion() uint64 {
-	if m != nil {
-		return m.ExpectedRestoreVersion
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetRestoreVersion() uint64 {
-	if m != nil {
-		return m.RestoreVersion
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetRegionId() uint64 {
-	if m != nil {
-		return m.RegionId
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetRegionVersion() uint64 {
-	if m != nil {
-		return m.RegionVersion
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetConfVer() uint64 {
-	if m != nil {
-		return m.ConfVer
-	}
-	return 0
-}
-
-func (m *KeyspaceTask) GetEncryptionMetaFileId() uint64 {
-	if m != nil {
-		return m.EncryptionMetaFileId
-	}
-	return 0
 }
 
 type NamespaceMeta struct {
@@ -505,7 +209,7 @@ func (m *NamespaceMeta) Reset()         { *m = NamespaceMeta{} }
 func (m *NamespaceMeta) String() string { return proto.CompactTextString(m) }
 func (*NamespaceMeta) ProtoMessage()    {}
 func (*NamespaceMeta) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{4}
+	return fileDescriptor_5c5d91f3e5071166, []int{1}
 }
 func (m *NamespaceMeta) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -587,7 +291,7 @@ func (m *NamespaceRef) Reset()         { *m = NamespaceRef{} }
 func (m *NamespaceRef) String() string { return proto.CompactTextString(m) }
 func (*NamespaceRef) ProtoMessage()    {}
 func (*NamespaceRef) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{5}
+	return fileDescriptor_5c5d91f3e5071166, []int{2}
 }
 func (m *NamespaceRef) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -671,7 +375,7 @@ func (m *CreateNamespaceRequest) Reset()         { *m = CreateNamespaceRequest{}
 func (m *CreateNamespaceRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateNamespaceRequest) ProtoMessage()    {}
 func (*CreateNamespaceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{6}
+	return fileDescriptor_5c5d91f3e5071166, []int{3}
 }
 func (m *CreateNamespaceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -730,7 +434,7 @@ func (m *CreateNamespaceResponse) Reset()         { *m = CreateNamespaceResponse
 func (m *CreateNamespaceResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateNamespaceResponse) ProtoMessage()    {}
 func (*CreateNamespaceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{7}
+	return fileDescriptor_5c5d91f3e5071166, []int{4}
 }
 func (m *CreateNamespaceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -782,7 +486,7 @@ func (m *LoadNamespaceRequest) Reset()         { *m = LoadNamespaceRequest{} }
 func (m *LoadNamespaceRequest) String() string { return proto.CompactTextString(m) }
 func (*LoadNamespaceRequest) ProtoMessage()    {}
 func (*LoadNamespaceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{8}
+	return fileDescriptor_5c5d91f3e5071166, []int{5}
 }
 func (m *LoadNamespaceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -834,7 +538,7 @@ func (m *LoadNamespaceResponse) Reset()         { *m = LoadNamespaceResponse{} }
 func (m *LoadNamespaceResponse) String() string { return proto.CompactTextString(m) }
 func (*LoadNamespaceResponse) ProtoMessage()    {}
 func (*LoadNamespaceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{9}
+	return fileDescriptor_5c5d91f3e5071166, []int{6}
 }
 func (m *LoadNamespaceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -887,7 +591,7 @@ func (m *GetAllNamespacesRequest) Reset()         { *m = GetAllNamespacesRequest
 func (m *GetAllNamespacesRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAllNamespacesRequest) ProtoMessage()    {}
 func (*GetAllNamespacesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{10}
+	return fileDescriptor_5c5d91f3e5071166, []int{7}
 }
 func (m *GetAllNamespacesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -946,7 +650,7 @@ func (m *GetAllNamespacesResponse) Reset()         { *m = GetAllNamespacesRespon
 func (m *GetAllNamespacesResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAllNamespacesResponse) ProtoMessage()    {}
 func (*GetAllNamespacesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{11}
+	return fileDescriptor_5c5d91f3e5071166, []int{8}
 }
 func (m *GetAllNamespacesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -999,7 +703,7 @@ func (m *UpdateNamespaceStateRequest) Reset()         { *m = UpdateNamespaceStat
 func (m *UpdateNamespaceStateRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateNamespaceStateRequest) ProtoMessage()    {}
 func (*UpdateNamespaceStateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{12}
+	return fileDescriptor_5c5d91f3e5071166, []int{9}
 }
 func (m *UpdateNamespaceStateRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1058,7 +762,7 @@ func (m *UpdateNamespaceStateResponse) Reset()         { *m = UpdateNamespaceSta
 func (m *UpdateNamespaceStateResponse) String() string { return proto.CompactTextString(m) }
 func (*UpdateNamespaceStateResponse) ProtoMessage()    {}
 func (*UpdateNamespaceStateResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{13}
+	return fileDescriptor_5c5d91f3e5071166, []int{10}
 }
 func (m *UpdateNamespaceStateResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1112,7 +816,7 @@ func (m *LoadKeyspaceRequest) Reset()         { *m = LoadKeyspaceRequest{} }
 func (m *LoadKeyspaceRequest) String() string { return proto.CompactTextString(m) }
 func (*LoadKeyspaceRequest) ProtoMessage()    {}
 func (*LoadKeyspaceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{14}
+	return fileDescriptor_5c5d91f3e5071166, []int{11}
 }
 func (m *LoadKeyspaceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1174,7 +878,7 @@ func (m *LoadKeyspaceByIDRequest) Reset()         { *m = LoadKeyspaceByIDRequest
 func (m *LoadKeyspaceByIDRequest) String() string { return proto.CompactTextString(m) }
 func (*LoadKeyspaceByIDRequest) ProtoMessage()    {}
 func (*LoadKeyspaceByIDRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{15}
+	return fileDescriptor_5c5d91f3e5071166, []int{12}
 }
 func (m *LoadKeyspaceByIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1258,15 +962,13 @@ func (*LoadKeyspaceByIDRequest) XXX_OneofWrappers() []interface{} {
 type LoadKeyspaceResponse struct {
 	Header   *pdpb.ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	Keyspace *KeyspaceMeta        `protobuf:"bytes,2,opt,name=keyspace,proto3" json:"keyspace,omitempty"`
-	// Present only while a durable reclaim/reuse task is active for this ID.
-	Task *KeyspaceTask `protobuf:"bytes,3,opt,name=task,proto3" json:"task,omitempty"`
 }
 
 func (m *LoadKeyspaceResponse) Reset()         { *m = LoadKeyspaceResponse{} }
 func (m *LoadKeyspaceResponse) String() string { return proto.CompactTextString(m) }
 func (*LoadKeyspaceResponse) ProtoMessage()    {}
 func (*LoadKeyspaceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{16}
+	return fileDescriptor_5c5d91f3e5071166, []int{13}
 }
 func (m *LoadKeyspaceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1309,13 +1011,6 @@ func (m *LoadKeyspaceResponse) GetKeyspace() *KeyspaceMeta {
 	return nil
 }
 
-func (m *LoadKeyspaceResponse) GetTask() *KeyspaceTask {
-	if m != nil {
-		return m.Task
-	}
-	return nil
-}
-
 type LookupKeyspaceRequest struct {
 	Header *pdpb.RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
 	Name   string              `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -1325,7 +1020,7 @@ func (m *LookupKeyspaceRequest) Reset()         { *m = LookupKeyspaceRequest{} }
 func (m *LookupKeyspaceRequest) String() string { return proto.CompactTextString(m) }
 func (*LookupKeyspaceRequest) ProtoMessage()    {}
 func (*LookupKeyspaceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{17}
+	return fileDescriptor_5c5d91f3e5071166, []int{14}
 }
 func (m *LookupKeyspaceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1377,7 +1072,7 @@ func (m *LookupKeyspaceResponse) Reset()         { *m = LookupKeyspaceResponse{}
 func (m *LookupKeyspaceResponse) String() string { return proto.CompactTextString(m) }
 func (*LookupKeyspaceResponse) ProtoMessage()    {}
 func (*LookupKeyspaceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{18}
+	return fileDescriptor_5c5d91f3e5071166, []int{15}
 }
 func (m *LookupKeyspaceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1428,7 +1123,7 @@ func (m *WatchKeyspacesRequest) Reset()         { *m = WatchKeyspacesRequest{} }
 func (m *WatchKeyspacesRequest) String() string { return proto.CompactTextString(m) }
 func (*WatchKeyspacesRequest) ProtoMessage()    {}
 func (*WatchKeyspacesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{19}
+	return fileDescriptor_5c5d91f3e5071166, []int{16}
 }
 func (m *WatchKeyspacesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1473,7 +1168,7 @@ func (m *WatchKeyspacesResponse) Reset()         { *m = WatchKeyspacesResponse{}
 func (m *WatchKeyspacesResponse) String() string { return proto.CompactTextString(m) }
 func (*WatchKeyspacesResponse) ProtoMessage()    {}
 func (*WatchKeyspacesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{20}
+	return fileDescriptor_5c5d91f3e5071166, []int{17}
 }
 func (m *WatchKeyspacesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1529,7 +1224,7 @@ func (m *UpdateKeyspaceStateRequest) Reset()         { *m = UpdateKeyspaceStateR
 func (m *UpdateKeyspaceStateRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateKeyspaceStateRequest) ProtoMessage()    {}
 func (*UpdateKeyspaceStateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{21}
+	return fileDescriptor_5c5d91f3e5071166, []int{18}
 }
 func (m *UpdateKeyspaceStateRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1626,7 +1321,7 @@ func (m *UpdateKeyspaceStateResponse) Reset()         { *m = UpdateKeyspaceState
 func (m *UpdateKeyspaceStateResponse) String() string { return proto.CompactTextString(m) }
 func (*UpdateKeyspaceStateResponse) ProtoMessage()    {}
 func (*UpdateKeyspaceStateResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{22}
+	return fileDescriptor_5c5d91f3e5071166, []int{19}
 }
 func (m *UpdateKeyspaceStateResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1684,7 +1379,7 @@ func (m *GetAllKeyspacesRequest) Reset()         { *m = GetAllKeyspacesRequest{}
 func (m *GetAllKeyspacesRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAllKeyspacesRequest) ProtoMessage()    {}
 func (*GetAllKeyspacesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{23}
+	return fileDescriptor_5c5d91f3e5071166, []int{20}
 }
 func (m *GetAllKeyspacesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1788,7 +1483,7 @@ func (m *GetAllKeyspacesResponse) Reset()         { *m = GetAllKeyspacesResponse
 func (m *GetAllKeyspacesResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAllKeyspacesResponse) ProtoMessage()    {}
 func (*GetAllKeyspacesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5c5d91f3e5071166, []int{24}
+	return fileDescriptor_5c5d91f3e5071166, []int{21}
 }
 func (m *GetAllKeyspacesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1832,13 +1527,9 @@ func (m *GetAllKeyspacesResponse) GetKeyspaces() []*KeyspaceMeta {
 }
 
 func init() {
-	proto.RegisterEnum("keyspacepb.KeyspaceTaskPhase", KeyspaceTaskPhase_name, KeyspaceTaskPhase_value)
 	proto.RegisterEnum("keyspacepb.KeyspaceState", KeyspaceState_name, KeyspaceState_value)
-	proto.RegisterType((*SelectKeyspaceEncryptionMetaFileRequest)(nil), "keyspacepb.SelectKeyspaceEncryptionMetaFileRequest")
-	proto.RegisterType((*SelectKeyspaceEncryptionMetaFileResponse)(nil), "keyspacepb.SelectKeyspaceEncryptionMetaFileResponse")
 	proto.RegisterType((*KeyspaceMeta)(nil), "keyspacepb.KeyspaceMeta")
 	proto.RegisterMapType((map[string]string)(nil), "keyspacepb.KeyspaceMeta.ConfigEntry")
-	proto.RegisterType((*KeyspaceTask)(nil), "keyspacepb.KeyspaceTask")
 	proto.RegisterType((*NamespaceMeta)(nil), "keyspacepb.NamespaceMeta")
 	proto.RegisterMapType((map[string]string)(nil), "keyspacepb.NamespaceMeta.ConfigEntry")
 	proto.RegisterType((*NamespaceRef)(nil), "keyspacepb.NamespaceRef")
@@ -1867,100 +1558,79 @@ func init() {
 func init() { proto.RegisterFile("keyspacepb.proto", fileDescriptor_5c5d91f3e5071166) }
 
 var fileDescriptor_5c5d91f3e5071166 = []byte{
-	// 1485 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x58, 0x4b, 0x6f, 0x13, 0xd7,
-	0x17, 0xf7, 0xf5, 0x23, 0xb1, 0x8f, 0x63, 0x67, 0xb8, 0x79, 0x39, 0x03, 0x18, 0x33, 0xc0, 0x3f,
-	0x16, 0x7f, 0x64, 0x2a, 0x43, 0x29, 0x54, 0xed, 0xc2, 0x4e, 0x0c, 0xb1, 0x12, 0x42, 0x3a, 0x0e,
-	0x69, 0x11, 0x48, 0xd6, 0xe0, 0xb9, 0x71, 0x46, 0x76, 0x6c, 0x77, 0x66, 0x92, 0x36, 0xaa, 0x44,
-	0x5f, 0xea, 0xaa, 0x52, 0xe9, 0xa6, 0x52, 0xbf, 0x41, 0x59, 0x54, 0xdd, 0xf4, 0x2b, 0x74, 0xd1,
-	0x55, 0xc5, 0x92, 0x45, 0x17, 0x88, 0x6c, 0xfb, 0x21, 0xaa, 0xb9, 0xd7, 0x73, 0x3d, 0x33, 0x9e,
-	0xd8, 0x89, 0xa1, 0x69, 0x57, 0x99, 0x39, 0xf7, 0x37, 0xe7, 0xf1, 0x3b, 0x8f, 0x7b, 0x62, 0x10,
-	0x1a, 0x64, 0xdf, 0xe8, 0x28, 0x35, 0xd2, 0x79, 0x9c, 0xeb, 0xe8, 0x6d, 0xb3, 0x8d, 0xa1, 0x27,
-	0x11, 0xe3, 0x4a, 0x47, 0xb3, 0x0f, 0xc4, 0xe9, 0x7a, 0xbb, 0xde, 0xa6, 0x8f, 0x57, 0xad, 0xa7,
-	0xae, 0x14, 0x3a, 0x2a, 0x47, 0x4c, 0xea, 0xbb, 0x86, 0x49, 0x1f, 0x99, 0x40, 0xfa, 0x0b, 0xc1,
-	0x42, 0x85, 0x34, 0x49, 0xcd, 0x5c, 0xe9, 0x2a, 0x2d, 0xb5, 0x6a, 0xfa, 0x7e, 0xc7, 0xd4, 0xda,
-	0xad, 0xbb, 0xc4, 0x54, 0x6e, 0x6b, 0x4d, 0x22, 0x93, 0x8f, 0x77, 0x89, 0x61, 0xe2, 0xff, 0xc3,
-	0xd8, 0x36, 0x51, 0x54, 0xa2, 0xa7, 0x50, 0x06, 0x65, 0xe3, 0xf9, 0xa9, 0x1c, 0xd5, 0xdc, 0x3d,
-	0x5e, 0xa6, 0x47, 0x72, 0x17, 0x82, 0xcf, 0x41, 0xdc, 0x76, 0xb3, 0xaa, 0xa9, 0xa9, 0x60, 0x06,
-	0x65, 0x13, 0x32, 0xf7, 0xbc, 0xac, 0xe2, 0x34, 0x40, 0x9d, 0xb4, 0x88, 0xae, 0x58, 0xa6, 0x52,
-	0xa1, 0x0c, 0xca, 0x86, 0x65, 0x87, 0x04, 0x2f, 0xc0, 0xa4, 0x4e, 0x0c, 0xb3, 0xad, 0x93, 0xea,
-	0x1e, 0xd1, 0x0d, 0x0b, 0x14, 0xa6, 0xa0, 0x64, 0x57, 0xbc, 0xc9, 0xa4, 0xf8, 0x32, 0x9c, 0xaa,
-	0x29, 0x2d, 0x55, 0x53, 0x15, 0x93, 0x54, 0xb7, 0xb4, 0x26, 0xb5, 0x17, 0xa1, 0xd0, 0x49, 0x7e,
-	0x60, 0xc5, 0x51, 0x56, 0xa5, 0xaf, 0x10, 0x64, 0x87, 0x87, 0x6b, 0x74, 0xda, 0x2d, 0x83, 0xe0,
-	0x2b, 0x9e, 0x78, 0xa7, 0xed, 0x78, 0xd9, 0xb9, 0x27, 0xe0, 0x2c, 0x08, 0x06, 0xd5, 0x4c, 0x54,
-	0xee, 0x45, 0x90, 0x39, 0x6c, 0xcb, 0xbb, 0x4e, 0xfc, 0x16, 0x82, 0x09, 0xdb, 0xbc, 0x65, 0x14,
-	0x0b, 0x10, 0xd4, 0x54, 0x6a, 0x24, 0xb1, 0x1c, 0x90, 0x83, 0x9a, 0x8a, 0x6f, 0xc3, 0x29, 0x07,
-	0x7b, 0xa4, 0x65, 0x6a, 0xe6, 0x7e, 0x2a, 0x4a, 0xbd, 0x98, 0xcb, 0xb1, 0x94, 0xaf, 0x70, 0x2a,
-	0xd9, 0xf1, 0x72, 0x40, 0x16, 0x1a, 0x1e, 0x19, 0xc6, 0x10, 0x6e, 0x29, 0x3b, 0x84, 0x3a, 0x12,
-	0x93, 0xe9, 0x33, 0xbe, 0x0a, 0x11, 0xc3, 0x54, 0x4c, 0x42, 0x39, 0x4f, 0xe6, 0xe7, 0x73, 0x8e,
-	0x02, 0xb3, 0x95, 0x56, 0x2c, 0x80, 0xcc, 0x70, 0xf8, 0x2c, 0x40, 0x4d, 0x27, 0x8a, 0x15, 0x98,
-	0x62, 0xd2, 0x24, 0x84, 0xe4, 0x58, 0x57, 0x52, 0x30, 0x69, 0xe0, 0x16, 0xae, 0x5a, 0xdb, 0x56,
-	0x5a, 0x75, 0x06, 0x8a, 0x50, 0x50, 0x92, 0xca, 0x17, 0x99, 0xb8, 0x60, 0xe2, 0xf7, 0x60, 0xac,
-	0xd6, 0x6e, 0x6d, 0x69, 0xf5, 0xd4, 0x78, 0x26, 0x94, 0x8d, 0xe7, 0x2f, 0xfa, 0x99, 0xb6, 0x18,
-	0xc9, 0x2d, 0x52, 0x58, 0xa9, 0x65, 0xea, 0xfb, 0x72, 0xf7, 0x1b, 0x4f, 0xc1, 0xc4, 0x8e, 0x52,
-	0x30, 0xe0, 0x57, 0x30, 0xe2, 0x2d, 0x88, 0x3b, 0xf4, 0x63, 0x01, 0x42, 0x0d, 0xb2, 0x4f, 0xe9,
-	0x8f, 0xc9, 0xd6, 0x23, 0x9e, 0x86, 0xc8, 0x9e, 0xd2, 0xdc, 0xb5, 0x69, 0x63, 0x2f, 0xef, 0x06,
-	0x6f, 0xa2, 0x22, 0x40, 0xd4, 0x76, 0x59, 0xfa, 0xc5, 0x91, 0xc6, 0x0d, 0xc5, 0x68, 0xe0, 0x6b,
-	0x10, 0xe9, 0x6c, 0x2b, 0x06, 0xa1, 0xaa, 0x92, 0xf9, 0xb3, 0x7e, 0xd1, 0x59, 0xc0, 0x75, 0x0b,
-	0x24, 0x33, 0xec, 0xf0, 0x3e, 0xb9, 0x0a, 0x53, 0xe4, 0xd3, 0x0e, 0xab, 0xab, 0xbe, 0x86, 0xc1,
-	0xf6, 0xd1, 0x9d, 0x1e, 0x0f, 0x6e, 0x9e, 0xc2, 0x7d, 0x3c, 0xdd, 0x84, 0x14, 0x57, 0xe8, 0x25,
-	0x8c, 0xb5, 0xcd, 0xac, 0x7d, 0x2e, 0xbb, 0x3b, 0xcd, 0x87, 0xe1, 0x31, 0xdf, 0x96, 0x3c, 0x0d,
-	0x31, 0x9d, 0xd4, 0xb5, 0x76, 0xcb, 0x0a, 0x69, 0x9c, 0x42, 0xa2, 0x4c, 0x50, 0x56, 0xf1, 0x25,
-	0x48, 0x76, 0x0f, 0x6d, 0x25, 0x51, 0x8a, 0x48, 0x30, 0xa9, 0xad, 0x63, 0x1e, 0xa2, 0x56, 0xe2,
-	0x2d, 0x50, 0x37, 0xd9, 0xe3, 0xd6, 0xfb, 0x26, 0xd1, 0xf1, 0xdb, 0x30, 0x47, 0x78, 0xdb, 0x56,
-	0x77, 0x88, 0xa9, 0xf0, 0x8e, 0x63, 0x19, 0x9f, 0x26, 0x7d, 0x5d, 0x5d, 0x56, 0xa5, 0x9f, 0x82,
-	0x90, 0x58, 0x53, 0x76, 0x48, 0xaf, 0xf1, 0x92, 0xbd, 0xc6, 0xa3, 0x6d, 0xf7, 0xdf, 0x6a, 0x97,
-	0xf7, 0x3d, 0xed, 0x72, 0xc9, 0x69, 0xda, 0x15, 0x88, 0x5f, 0xbf, 0xbc, 0x46, 0x99, 0x4b, 0x1a,
-	0x4c, 0x70, 0xfd, 0x32, 0xd9, 0xc2, 0x17, 0x60, 0xa2, 0x65, 0xbf, 0x57, 0x1d, 0xa3, 0x2a, 0xce,
-	0xa5, 0x65, 0x15, 0x2f, 0x40, 0xb2, 0x07, 0xea, 0xd1, 0xb8, 0x1c, 0x90, 0x13, 0x5c, 0x6e, 0x69,
-	0x2d, 0xc6, 0x21, 0xc6, 0x05, 0xd2, 0x9f, 0x08, 0x66, 0x17, 0x29, 0x39, 0x0e, 0x8b, 0x23, 0xdc,
-	0x37, 0x7e, 0xa9, 0xbb, 0xcd, 0x09, 0x0c, 0x51, 0x02, 0x73, 0x4e, 0x02, 0xfd, 0x8d, 0xbe, 0x69,
-	0x26, 0xbf, 0x40, 0x30, 0xd7, 0x67, 0x69, 0xa4, 0xfb, 0xe5, 0x1d, 0x07, 0x6b, 0xd4, 0x4e, 0xdc,
-	0x5d, 0x8b, 0xae, 0x82, 0x90, 0x1d, 0x0c, 0x7f, 0x06, 0xd3, 0xab, 0x6d, 0x45, 0x7d, 0x3d, 0x7a,
-	0x6f, 0xf4, 0x5b, 0x4f, 0xf9, 0x5a, 0x97, 0xc9, 0x96, 0xd3, 0xf8, 0x13, 0x98, 0xf1, 0x18, 0x3f,
-	0xd9, 0xe0, 0x3f, 0x81, 0xb9, 0x3b, 0xc4, 0x2c, 0x34, 0x9b, 0x1c, 0x61, 0x8c, 0x14, 0xff, 0x3c,
-	0x44, 0x0d, 0x53, 0xd1, 0xcd, 0xde, 0x8c, 0x1e, 0xa7, 0xef, 0x65, 0xd5, 0x4a, 0x7e, 0x53, 0xdb,
-	0xd1, 0x4c, 0x3a, 0x20, 0x12, 0x32, 0x7b, 0x91, 0xbe, 0x46, 0x90, 0xea, 0xb7, 0x3c, 0x52, 0xf0,
-	0xb7, 0x00, 0x78, 0x40, 0x46, 0x2a, 0x48, 0x4b, 0x79, 0x40, 0xf4, 0x0e, 0xb0, 0xf4, 0x2b, 0x82,
-	0xd3, 0xf7, 0x3b, 0xaa, 0xb3, 0xfc, 0xd8, 0xac, 0x3a, 0xc1, 0x1a, 0x38, 0xf6, 0x04, 0x95, 0xbe,
-	0x41, 0x70, 0xc6, 0xdf, 0xeb, 0x93, 0x2d, 0x9e, 0xef, 0x10, 0x4c, 0x59, 0xd5, 0x6b, 0x3b, 0xf9,
-	0xc6, 0x06, 0x93, 0x8b, 0xc9, 0xd0, 0xd1, 0xbb, 0xe9, 0x67, 0x04, 0x73, 0x4e, 0x87, 0x8a, 0xfb,
-	0xe5, 0xa5, 0x91, 0x9c, 0x62, 0x1b, 0x67, 0x70, 0xd8, 0xc6, 0x19, 0x3a, 0xf6, 0xc6, 0xe9, 0xda,
-	0x90, 0x9e, 0x21, 0x36, 0x7a, 0x7a, 0xfc, 0x8d, 0x94, 0xbf, 0xeb, 0x3d, 0x95, 0x7e, 0x65, 0xe7,
-	0x5c, 0x1c, 0x65, 0x8e, 0xc4, 0x57, 0x20, 0x6c, 0x2a, 0x46, 0xc3, 0x8f, 0x5e, 0xe7, 0x32, 0x26,
-	0x53, 0x94, 0xf4, 0x91, 0x35, 0xa7, 0xda, 0x8d, 0xdd, 0xce, 0x9b, 0xce, 0xb5, 0xf4, 0x04, 0x66,
-	0xbd, 0x9a, 0x47, 0x62, 0xe1, 0x06, 0xc4, 0xec, 0x10, 0xec, 0x21, 0x70, 0x38, 0x0d, 0x3d, 0xa8,
-	0xb4, 0x04, 0x33, 0x1f, 0x2a, 0x66, 0x6d, 0xdb, 0x3e, 0x1f, 0x69, 0xfe, 0x59, 0x51, 0x78, 0xb5,
-	0x9c, 0x68, 0x14, 0x2f, 0x11, 0x88, 0x6c, 0x24, 0xb8, 0x27, 0xc6, 0x3f, 0x58, 0xfc, 0xe1, 0xe3,
-	0xff, 0xbb, 0x75, 0xdc, 0x49, 0xe7, 0xea, 0x96, 0x2f, 0xf9, 0xac, 0xf6, 0x84, 0x78, 0x72, 0x4d,
-	0x23, 0xfd, 0x10, 0x84, 0x59, 0x76, 0x6b, 0xbd, 0x56, 0xb9, 0xe0, 0xd3, 0xde, 0xeb, 0x72, 0x39,
-	0xd0, 0xbb, 0x30, 0x3f, 0x80, 0x39, 0x76, 0xd8, 0xcf, 0x79, 0x64, 0x18, 0xe7, 0x33, 0xf4, 0x4b,
-	0xef, 0x81, 0xff, 0x1d, 0xec, 0x1e, 0xb3, 0xe1, 0x23, 0x8f, 0xd9, 0xa2, 0x00, 0x49, 0xb7, 0x83,
-	0xd2, 0xe7, 0xf6, 0x1a, 0xf1, 0x2f, 0xd5, 0xff, 0xe5, 0x6f, 0x11, 0x9c, 0xea, 0xfb, 0x1f, 0x12,
-	0xcf, 0x02, 0x5e, 0x29, 0x3d, 0xa8, 0xac, 0x17, 0x16, 0x4b, 0xd5, 0x8d, 0x42, 0x65, 0xa5, 0xba,
-	0x76, 0x6f, 0xad, 0x24, 0x04, 0xf0, 0x79, 0x38, 0xeb, 0x96, 0xaf, 0xcb, 0xa5, 0xf5, 0x82, 0x5c,
-	0xaa, 0xca, 0xa5, 0xc5, 0xd5, 0x42, 0xf9, 0xae, 0x80, 0xf0, 0x3c, 0xcc, 0xb8, 0x21, 0xf6, 0x51,
-	0x10, 0x67, 0xe0, 0x8c, 0xfb, 0x68, 0xb3, 0xb0, 0x5a, 0x5e, 0x2a, 0x6c, 0x58, 0x9f, 0xdf, 0xaf,
-	0x94, 0x84, 0xd0, 0xe5, 0x3b, 0x90, 0x70, 0xd5, 0x28, 0x8e, 0xc3, 0x78, 0x69, 0xad, 0x50, 0x5c,
-	0x2d, 0x2d, 0x09, 0x01, 0x3c, 0x01, 0xd1, 0xa5, 0x72, 0x85, 0xbd, 0x21, 0xeb, 0xad, 0x20, 0x2f,
-	0x2e, 0x97, 0x37, 0x4b, 0x4b, 0x42, 0x10, 0x27, 0x20, 0xb6, 0x71, 0xef, 0x6e, 0xb1, 0xb2, 0x61,
-	0x39, 0x1a, 0xca, 0x3f, 0x0d, 0x41, 0x8c, 0x67, 0x01, 0x3f, 0x82, 0x49, 0xcf, 0xae, 0x8c, 0xa5,
-	0xe1, 0x2b, 0xbb, 0x78, 0x61, 0x20, 0x86, 0xa5, 0x41, 0x0a, 0xe0, 0x4d, 0x48, 0xb8, 0x56, 0x51,
-	0x9c, 0x71, 0x7e, 0xe7, 0xb7, 0x22, 0x8b, 0xe7, 0x07, 0x20, 0xb8, 0xde, 0x2a, 0x08, 0xde, 0x45,
-	0x0f, 0xbb, 0x5c, 0x3a, 0x64, 0x01, 0x15, 0x2f, 0x0e, 0x06, 0x71, 0x03, 0x0d, 0x98, 0xf6, 0xdb,
-	0x86, 0xf0, 0x82, 0xf3, 0xfb, 0x01, 0x5b, 0x9e, 0x98, 0x1d, 0x0e, 0xb4, 0x8d, 0xe5, 0xff, 0x88,
-	0x40, 0xd4, 0xce, 0x2d, 0xae, 0xc0, 0x84, 0xf3, 0xfe, 0xc6, 0xe7, 0xbc, 0x7c, 0x78, 0x6e, 0x4b,
-	0x31, 0x73, 0x38, 0x80, 0x87, 0xf3, 0x00, 0x92, 0xee, 0x0b, 0x11, 0x7b, 0x68, 0xf6, 0xb9, 0x86,
-	0x45, 0x69, 0x10, 0x84, 0xab, 0x7e, 0x08, 0x82, 0x77, 0x3d, 0x72, 0xa7, 0xe2, 0x90, 0xe5, 0xe9,
-	0x48, 0x7e, 0x3f, 0x84, 0xa4, 0xfb, 0x0a, 0x74, 0xfb, 0xed, 0x7b, 0xc9, 0xba, 0xfd, 0xf6, 0xbf,
-	0x41, 0xa5, 0xc0, 0x5b, 0x08, 0x6f, 0xc3, 0x94, 0xcf, 0xec, 0xc7, 0xff, 0xeb, 0xcf, 0x9c, 0xdf,
-	0xfd, 0x27, 0x2e, 0x0c, 0xc5, 0xf1, 0x30, 0x1e, 0xc1, 0xa4, 0x67, 0x94, 0xb9, 0x9b, 0xcc, 0x7f,
-	0xfc, 0x8b, 0x17, 0x06, 0x62, 0xb8, 0xf6, 0xa7, 0x08, 0x32, 0xc3, 0x7e, 0x60, 0xc5, 0xd7, 0x9c,
-	0xba, 0x8e, 0xf8, 0xeb, 0xb3, 0x78, 0xfd, 0x78, 0x1f, 0xd9, 0x1e, 0x15, 0xf3, 0x2f, 0x9e, 0x45,
-	0xd1, 0xef, 0xaf, 0xd2, 0xe8, 0xf9, 0xab, 0x34, 0x7a, 0xf9, 0x2a, 0x8d, 0xbe, 0x3f, 0x48, 0x07,
-	0x7e, 0x3c, 0x48, 0x07, 0x9e, 0x1f, 0xa4, 0x03, 0x2f, 0x0e, 0xd2, 0x01, 0x10, 0xda, 0x7a, 0x3d,
-	0x67, 0x6a, 0x8d, 0xbd, 0x5c, 0x63, 0x8f, 0xfe, 0x2a, 0xfe, 0x78, 0x8c, 0xfe, 0xb9, 0xf6, 0x77,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0x84, 0xf4, 0xab, 0x02, 0x7c, 0x17, 0x00, 0x00,
+	// 1146 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x58, 0x4f, 0x6f, 0x1b, 0x45,
+	0x14, 0xdf, 0xd9, 0x75, 0x12, 0xfb, 0xad, 0xed, 0x2c, 0x13, 0x27, 0x76, 0xb7, 0x60, 0xcc, 0xa6,
+	0x10, 0x0b, 0x90, 0x8b, 0x0c, 0x2a, 0x14, 0xc1, 0xc1, 0xff, 0x5a, 0xbb, 0x24, 0xa9, 0xd8, 0x84,
+	0x02, 0x6a, 0x25, 0x6b, 0xeb, 0xdd, 0x38, 0x2b, 0x27, 0xb6, 0xb1, 0x27, 0x41, 0x16, 0x52, 0x01,
+	0x21, 0xc4, 0x0d, 0xb8, 0x20, 0xf1, 0x0d, 0xe0, 0xc0, 0x8d, 0x2b, 0x1f, 0x80, 0x63, 0x8f, 0x3d,
+	0x70, 0xa8, 0x92, 0x2f, 0x82, 0x76, 0xd6, 0xbb, 0xde, 0x59, 0x6f, 0xec, 0xc4, 0x0d, 0xa6, 0x27,
+	0xef, 0xbc, 0xf9, 0xcd, 0xfb, 0xf3, 0x9b, 0x37, 0xef, 0x3d, 0x19, 0xa4, 0x96, 0x31, 0xe8, 0x77,
+	0xb5, 0x86, 0xd1, 0x7d, 0x98, 0xeb, 0xf6, 0x3a, 0xa4, 0x83, 0x61, 0x24, 0x91, 0x45, 0xad, 0x6b,
+	0x3a, 0x1b, 0x72, 0xa2, 0xd9, 0x69, 0x76, 0xe8, 0xe7, 0x75, 0xeb, 0x6b, 0x28, 0x85, 0xae, 0xee,
+	0x22, 0x96, 0x7b, 0x47, 0x7d, 0x42, 0x3f, 0x6d, 0x81, 0xf2, 0x83, 0x00, 0xd1, 0x8f, 0x86, 0xea,
+	0xb6, 0x0c, 0xa2, 0x61, 0x09, 0x78, 0x53, 0x4f, 0xa1, 0x0c, 0xca, 0xc6, 0xaa, 0x9c, 0xca, 0x9b,
+	0x3a, 0xbe, 0x05, 0x2f, 0x38, 0x06, 0xeb, 0xa6, 0x6e, 0xb4, 0x89, 0x49, 0x06, 0xa9, 0x70, 0x06,
+	0x65, 0xc5, 0x7c, 0x32, 0x67, 0x9b, 0x77, 0x34, 0xd4, 0x86, 0xdb, 0x55, 0x4e, 0x75, 0xdd, 0x76,
+	0x64, 0x18, 0x43, 0xa8, 0xad, 0x1d, 0x1a, 0x29, 0x3e, 0x83, 0xb2, 0x11, 0x95, 0x7e, 0xe3, 0xeb,
+	0xb0, 0xd0, 0x27, 0x1a, 0x31, 0x52, 0x42, 0x06, 0x65, 0xe3, 0xf9, 0x2b, 0x39, 0x4f, 0xb0, 0x8e,
+	0xd2, 0x1d, 0x0b, 0xa0, 0xda, 0x38, 0xfc, 0x12, 0x40, 0xa3, 0x67, 0x68, 0xc4, 0xd0, 0xeb, 0x1a,
+	0x49, 0x85, 0x32, 0x28, 0x2b, 0xa8, 0x91, 0xa1, 0xa4, 0x40, 0x70, 0x16, 0x24, 0x8a, 0xab, 0x37,
+	0xf6, 0xb5, 0x76, 0xd3, 0x06, 0x2d, 0x50, 0x50, 0x9c, 0xca, 0x4b, 0xb6, 0xb8, 0x40, 0xf0, 0x07,
+	0xb0, 0xd8, 0xe8, 0xb4, 0xf7, 0xcc, 0x66, 0x6a, 0x29, 0x23, 0x64, 0xc5, 0xfc, 0xb5, 0x20, 0xd3,
+	0x16, 0x23, 0xb9, 0x12, 0x85, 0x55, 0xda, 0xa4, 0x37, 0x50, 0x87, 0x67, 0xe4, 0x9b, 0x20, 0x7a,
+	0xc4, 0x58, 0x02, 0xa1, 0x65, 0x0c, 0x28, 0x6b, 0x11, 0xd5, 0xfa, 0xc4, 0x09, 0x58, 0x38, 0xd6,
+	0x0e, 0x8e, 0x9c, 0x68, 0xed, 0xc5, 0xfb, 0xfc, 0x7b, 0xa8, 0x08, 0x10, 0x76, 0x2c, 0xdd, 0x09,
+	0x85, 0x23, 0x12, 0xdc, 0x09, 0x85, 0x41, 0x12, 0x95, 0xdf, 0x78, 0x88, 0x6d, 0x6b, 0x87, 0xc6,
+	0xe8, 0x2a, 0xe2, 0xa3, 0xab, 0xa0, 0x17, 0xf1, 0x7c, 0x11, 0xf8, 0xa1, 0x8f, 0xc0, 0x57, 0xbd,
+	0xa6, 0x99, 0x40, 0x2e, 0x99, 0x41, 0xc5, 0x84, 0xa8, 0xab, 0x5f, 0x35, 0xf6, 0xf0, 0x3a, 0x44,
+	0xdb, 0xce, 0xba, 0xee, 0x49, 0x5e, 0xd1, 0x95, 0xd6, 0x74, 0xbc, 0x01, 0xf1, 0x11, 0x68, 0x44,
+	0x63, 0x95, 0x53, 0x63, 0xae, 0xdc, 0xd2, 0x5a, 0x14, 0x21, 0xe2, 0x0a, 0x94, 0x7f, 0x10, 0xac,
+	0x95, 0x28, 0x39, 0x1e, 0x8b, 0x5f, 0x1c, 0x19, 0x7d, 0x82, 0xdf, 0x80, 0xc5, 0x7d, 0x43, 0xd3,
+	0x8d, 0x1e, 0xb5, 0x27, 0xe6, 0x57, 0x72, 0xf4, 0x9d, 0x0d, 0xb7, 0xab, 0x74, 0x4b, 0x1d, 0x42,
+	0x02, 0xaf, 0xee, 0x96, 0x4b, 0xa0, 0x40, 0x09, 0xcc, 0x79, 0x09, 0x0c, 0x36, 0x7a, 0xd9, 0x4c,
+	0x7e, 0x83, 0x20, 0x39, 0x66, 0xa9, 0xdf, 0xed, 0xb4, 0xfb, 0x06, 0x7e, 0xd3, 0x17, 0x5f, 0xc2,
+	0x89, 0xcf, 0xde, 0xf7, 0x05, 0xf8, 0xae, 0x87, 0x35, 0x6a, 0x47, 0x64, 0x73, 0x91, 0x49, 0x08,
+	0xd5, 0xc3, 0xf0, 0x57, 0x90, 0xd8, 0xec, 0x68, 0xfa, 0xb3, 0xd1, 0x7b, 0x63, 0xdc, 0x7a, 0x2a,
+	0xd0, 0xba, 0x6a, 0xec, 0x79, 0x8d, 0x3f, 0x82, 0x55, 0x9f, 0xf1, 0xf9, 0x06, 0xff, 0x25, 0x24,
+	0x6f, 0x1b, 0xa4, 0x70, 0x70, 0xe0, 0x22, 0xfa, 0x33, 0xc5, 0x7f, 0x05, 0xc2, 0x7d, 0xa2, 0xf5,
+	0x88, 0x95, 0xfd, 0x3c, 0xad, 0x17, 0x4b, 0x74, 0x5d, 0xd3, 0xad, 0xcb, 0x3f, 0x30, 0x0f, 0x4d,
+	0x42, 0x0b, 0x44, 0x4c, 0xb5, 0x17, 0xca, 0x77, 0x08, 0x52, 0xe3, 0x96, 0x67, 0x0a, 0xfe, 0x26,
+	0x80, 0x1b, 0x50, 0x3f, 0xc5, 0xd3, 0x54, 0x9e, 0x10, 0xbd, 0x07, 0xac, 0xfc, 0x89, 0xe0, 0xea,
+	0x27, 0x5d, 0xdd, 0x9b, 0x7e, 0x76, 0xad, 0x9a, 0x63, 0x0e, 0x5c, 0xb8, 0x82, 0x2a, 0xdf, 0x23,
+	0x78, 0x31, 0xd8, 0xeb, 0xf9, 0x26, 0xcf, 0x8f, 0x08, 0x56, 0xac, 0xec, 0x75, 0x9c, 0xbc, 0xb4,
+	0xc2, 0xc4, 0x30, 0x29, 0x9c, 0xff, 0x35, 0xfd, 0x81, 0x20, 0xe9, 0x75, 0xa8, 0x38, 0xa8, 0x95,
+	0x67, 0x72, 0xca, 0x9e, 0x41, 0xf8, 0x69, 0x33, 0x88, 0x70, 0xe1, 0x19, 0xc4, 0xdb, 0x7c, 0xad,
+	0xe2, 0x97, 0x60, 0xf9, 0x9b, 0xe9, 0xfe, 0xde, 0x19, 0xa9, 0x0c, 0x4a, 0x3b, 0xef, 0x28, 0xa1,
+	0x7a, 0x3b, 0xbf, 0x20, 0x85, 0x94, 0xcf, 0xac, 0xfa, 0xd3, 0x69, 0x1d, 0x75, 0x2f, 0xfb, 0x0e,
+	0x95, 0x47, 0xb0, 0xe6, 0xd7, 0x3c, 0x53, 0x74, 0x37, 0x20, 0xe2, 0xf8, 0xec, 0x3c, 0xee, 0xb3,
+	0xc3, 0x1b, 0x41, 0x95, 0x32, 0xac, 0x7e, 0xaa, 0x91, 0xc6, 0xbe, 0xb3, 0x3f, 0x53, 0x5d, 0xb3,
+	0xa2, 0xf0, 0x6b, 0x99, 0x6b, 0x14, 0x4f, 0x11, 0xc8, 0xf6, 0x53, 0x67, 0x2b, 0xc1, 0x7f, 0x98,
+	0xd4, 0xa1, 0x8b, 0x0f, 0xd6, 0x17, 0xad, 0x60, 0xcc, 0x2b, 0xf8, 0xd6, 0xad, 0xc1, 0xbe, 0x10,
+	0xe7, 0xf7, 0x18, 0x94, 0x5f, 0x78, 0x58, 0xb3, 0xbb, 0xd1, 0x33, 0xa5, 0x0b, 0xbe, 0xea, 0x6f,
+	0x83, 0x55, 0x6e, 0xd4, 0x08, 0x3f, 0x86, 0xa4, 0xbd, 0x39, 0xce, 0xf9, 0xc2, 0x34, 0xce, 0x57,
+	0xe9, 0x49, 0xff, 0x46, 0x70, 0x6f, 0x65, 0xcb, 0x67, 0xe8, 0xdc, 0xe5, 0xb3, 0x28, 0x41, 0x9c,
+	0x75, 0x50, 0xf9, 0xda, 0x19, 0x0f, 0xfe, 0xa7, 0xfc, 0x7f, 0x9d, 0x40, 0x8c, 0xc9, 0x0a, 0x2c,
+	0xc2, 0x52, 0x65, 0xbb, 0x50, 0xdc, 0xac, 0x94, 0x25, 0x0e, 0x47, 0x21, 0x5c, 0xae, 0xed, 0xd8,
+	0x2b, 0x64, 0xad, 0x0a, 0x6a, 0xa9, 0x5a, 0xbb, 0x57, 0x29, 0x4b, 0x3c, 0x8e, 0x41, 0x64, 0xf7,
+	0xee, 0x56, 0x71, 0x67, 0xf7, 0xee, 0x76, 0x45, 0x12, 0x70, 0x1c, 0x40, 0xad, 0x94, 0x36, 0x0b,
+	0xb5, 0xad, 0xda, 0xf6, 0x6d, 0x29, 0x64, 0x6d, 0x0f, 0xd7, 0x95, 0xb2, 0xb4, 0x60, 0x9d, 0x2d,
+	0xa9, 0x95, 0xc2, 0xae, 0xb5, 0xb9, 0x98, 0xff, 0x49, 0x80, 0x88, 0x4b, 0x12, 0x7e, 0x00, 0xcb,
+	0xbe, 0x11, 0x15, 0x2b, 0xd3, 0x27, 0x65, 0x79, 0x7d, 0x22, 0xc6, 0x66, 0x49, 0xe1, 0xf0, 0x3d,
+	0x88, 0x31, 0x13, 0x20, 0xce, 0x78, 0xcf, 0x05, 0x4d, 0xa6, 0xf2, 0x2b, 0x13, 0x10, 0xae, 0xde,
+	0x3a, 0x48, 0xfe, 0xf9, 0x0a, 0x33, 0x2e, 0x9d, 0x31, 0xf7, 0xc9, 0xd7, 0x26, 0x83, 0x5c, 0x03,
+	0x2d, 0x48, 0x04, 0x0d, 0x21, 0x78, 0xc3, 0x7b, 0x7e, 0xc2, 0x70, 0x25, 0x67, 0xa7, 0x03, 0x1d,
+	0x63, 0xf9, 0xbf, 0x42, 0x10, 0x76, 0x12, 0x01, 0xef, 0x40, 0xd4, 0xdb, 0x36, 0xf1, 0xcb, 0x7e,
+	0x3e, 0x7c, 0xcd, 0x4c, 0xce, 0x9c, 0x0d, 0x70, 0xc3, 0xf9, 0x1c, 0xe2, 0x6c, 0xbf, 0xc2, 0x3e,
+	0x9a, 0x03, 0xba, 0xa4, 0xac, 0x4c, 0x82, 0xb8, 0xaa, 0xef, 0x83, 0xe4, 0x9f, 0x4a, 0xd8, 0xab,
+	0x38, 0x63, 0x66, 0x39, 0x97, 0xdf, 0xf7, 0x21, 0xce, 0x76, 0x28, 0xd6, 0xef, 0xc0, 0x1e, 0xc8,
+	0xfa, 0x1d, 0xdc, 0xe0, 0x14, 0xee, 0x2d, 0x84, 0xf7, 0x61, 0x25, 0xa0, 0x34, 0xe3, 0xd7, 0xc6,
+	0x6f, 0x2e, 0xa8, 0x3d, 0xc9, 0x1b, 0x53, 0x71, 0x6e, 0x18, 0x0f, 0x60, 0xd9, 0x57, 0x69, 0xd8,
+	0x47, 0x16, 0x5c, 0x9d, 0xe5, 0xf5, 0x89, 0x18, 0x47, 0x7b, 0x31, 0xff, 0xe4, 0xf7, 0x30, 0xfa,
+	0xfb, 0x24, 0x8d, 0x1e, 0x9f, 0xa4, 0xd1, 0xd3, 0x93, 0x34, 0xfa, 0xf9, 0x34, 0xcd, 0xfd, 0x7a,
+	0x9a, 0xe6, 0x1e, 0x9f, 0xa6, 0xb9, 0x27, 0xa7, 0x69, 0x0e, 0xa4, 0x4e, 0xaf, 0x99, 0x23, 0x66,
+	0xeb, 0x38, 0xd7, 0x3a, 0xa6, 0x7f, 0x4c, 0x3d, 0x5c, 0xa4, 0x3f, 0x6f, 0xff, 0x1b, 0x00, 0x00,
+	0xff, 0xff, 0xcb, 0x77, 0x59, 0x8b, 0xff, 0x12, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -2163,9 +1833,6 @@ type KeyspaceClient interface {
 	WatchKeyspaces(ctx context.Context, in *WatchKeyspacesRequest, opts ...grpc.CallOption) (Keyspace_WatchKeyspacesClient, error)
 	UpdateKeyspaceState(ctx context.Context, in *UpdateKeyspaceStateRequest, opts ...grpc.CallOption) (*UpdateKeyspaceStateResponse, error)
 	GetAllKeyspaces(ctx context.Context, in *GetAllKeyspacesRequest, opts ...grpc.CallOption) (*GetAllKeyspacesResponse, error)
-	// SelectKeyspaceEncryptionMetaFile atomically chooses the immutable CMEK
-	// metadata file for one pending reused-keyspace CREATE reset.
-	SelectKeyspaceEncryptionMetaFile(ctx context.Context, in *SelectKeyspaceEncryptionMetaFileRequest, opts ...grpc.CallOption) (*SelectKeyspaceEncryptionMetaFileResponse, error)
 }
 
 type keyspaceClient struct {
@@ -2253,15 +1920,6 @@ func (c *keyspaceClient) GetAllKeyspaces(ctx context.Context, in *GetAllKeyspace
 	return out, nil
 }
 
-func (c *keyspaceClient) SelectKeyspaceEncryptionMetaFile(ctx context.Context, in *SelectKeyspaceEncryptionMetaFileRequest, opts ...grpc.CallOption) (*SelectKeyspaceEncryptionMetaFileResponse, error) {
-	out := new(SelectKeyspaceEncryptionMetaFileResponse)
-	err := c.cc.Invoke(ctx, "/keyspacepb.Keyspace/SelectKeyspaceEncryptionMetaFile", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // KeyspaceServer is the server API for Keyspace service.
 type KeyspaceServer interface {
 	LoadKeyspace(context.Context, *LoadKeyspaceRequest) (*LoadKeyspaceResponse, error)
@@ -2272,9 +1930,6 @@ type KeyspaceServer interface {
 	WatchKeyspaces(*WatchKeyspacesRequest, Keyspace_WatchKeyspacesServer) error
 	UpdateKeyspaceState(context.Context, *UpdateKeyspaceStateRequest) (*UpdateKeyspaceStateResponse, error)
 	GetAllKeyspaces(context.Context, *GetAllKeyspacesRequest) (*GetAllKeyspacesResponse, error)
-	// SelectKeyspaceEncryptionMetaFile atomically chooses the immutable CMEK
-	// metadata file for one pending reused-keyspace CREATE reset.
-	SelectKeyspaceEncryptionMetaFile(context.Context, *SelectKeyspaceEncryptionMetaFileRequest) (*SelectKeyspaceEncryptionMetaFileResponse, error)
 }
 
 // UnimplementedKeyspaceServer can be embedded to have forward compatible implementations.
@@ -2298,9 +1953,6 @@ func (*UnimplementedKeyspaceServer) UpdateKeyspaceState(ctx context.Context, req
 }
 func (*UnimplementedKeyspaceServer) GetAllKeyspaces(ctx context.Context, req *GetAllKeyspacesRequest) (*GetAllKeyspacesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllKeyspaces not implemented")
-}
-func (*UnimplementedKeyspaceServer) SelectKeyspaceEncryptionMetaFile(ctx context.Context, req *SelectKeyspaceEncryptionMetaFileRequest) (*SelectKeyspaceEncryptionMetaFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SelectKeyspaceEncryptionMetaFile not implemented")
 }
 
 func RegisterKeyspaceServer(s *grpc.Server, srv KeyspaceServer) {
@@ -2418,24 +2070,6 @@ func _Keyspace_GetAllKeyspaces_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Keyspace_SelectKeyspaceEncryptionMetaFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SelectKeyspaceEncryptionMetaFileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KeyspaceServer).SelectKeyspaceEncryptionMetaFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/keyspacepb.Keyspace/SelectKeyspaceEncryptionMetaFile",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KeyspaceServer).SelectKeyspaceEncryptionMetaFile(ctx, req.(*SelectKeyspaceEncryptionMetaFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Keyspace_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "keyspacepb.Keyspace",
 	HandlerType: (*KeyspaceServer)(nil),
@@ -2460,10 +2094,6 @@ var _Keyspace_serviceDesc = grpc.ServiceDesc{
 			MethodName: "GetAllKeyspaces",
 			Handler:    _Keyspace_GetAllKeyspaces_Handler,
 		},
-		{
-			MethodName: "SelectKeyspaceEncryptionMetaFile",
-			Handler:    _Keyspace_SelectKeyspaceEncryptionMetaFile_Handler,
-		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -2473,101 +2103,6 @@ var _Keyspace_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Metadata: "keyspacepb.proto",
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.CandidateFileId != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.CandidateFileId))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.RestoreVersion != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.RestoreVersion))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.Generation != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.Generation))
-		i--
-		dAtA[i] = 0x18
-	}
-	if m.KeyspaceId != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.KeyspaceId))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Header != nil {
-		{
-			size, err := m.Header.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintKeyspacepb(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.SelectedFileId != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.SelectedFileId))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Header != nil {
-		{
-			size, err := m.Header.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintKeyspacepb(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
 }
 
 func (m *KeyspaceMeta) Marshal() (dAtA []byte, err error) {
@@ -2590,16 +2125,6 @@ func (m *KeyspaceMeta) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.RestoreVersion != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.RestoreVersion))
-		i--
-		dAtA[i] = 0x50
-	}
-	if m.Generation != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.Generation))
-		i--
-		dAtA[i] = 0x48
-	}
 	if m.Keyspace != nil {
 		{
 			size := m.Keyspace.Size()
@@ -2686,79 +2211,6 @@ func (m *KeyspaceMeta_KeyspaceIdentity) MarshalToSizedBuffer(dAtA []byte) (int, 
 	}
 	return len(dAtA) - i, nil
 }
-func (m *KeyspaceTask) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *KeyspaceTask) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *KeyspaceTask) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.EncryptionMetaFileId != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.EncryptionMetaFileId))
-		i--
-		dAtA[i] = 0x50
-	}
-	if m.ConfVer != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.ConfVer))
-		i--
-		dAtA[i] = 0x48
-	}
-	if m.RegionVersion != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.RegionVersion))
-		i--
-		dAtA[i] = 0x40
-	}
-	if m.RegionId != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.RegionId))
-		i--
-		dAtA[i] = 0x38
-	}
-	if m.RestoreVersion != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.RestoreVersion))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.ExpectedRestoreVersion != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.ExpectedRestoreVersion))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.Generation != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.Generation))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.ExpectedGeneration != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.ExpectedGeneration))
-		i--
-		dAtA[i] = 0x18
-	}
-	if m.KeyspaceId != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.KeyspaceId))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Phase != 0 {
-		i = encodeVarintKeyspacepb(dAtA, i, uint64(m.Phase))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *NamespaceMeta) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -3432,18 +2884,6 @@ func (m *LoadKeyspaceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Task != nil {
-		{
-			size, err := m.Task.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintKeyspacepb(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x1a
-	}
 	if m.Keyspace != nil {
 		{
 			size, err := m.Keyspace.MarshalToSizedBuffer(dAtA[:i])
@@ -3929,47 +3369,6 @@ func encodeVarintKeyspacepb(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *SelectKeyspaceEncryptionMetaFileRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Header != nil {
-		l = m.Header.Size()
-		n += 1 + l + sovKeyspacepb(uint64(l))
-	}
-	if m.KeyspaceId != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.KeyspaceId))
-	}
-	if m.Generation != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.Generation))
-	}
-	if m.RestoreVersion != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.RestoreVersion))
-	}
-	if m.CandidateFileId != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.CandidateFileId))
-	}
-	return n
-}
-
-func (m *SelectKeyspaceEncryptionMetaFileResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Header != nil {
-		l = m.Header.Size()
-		n += 1 + l + sovKeyspacepb(uint64(l))
-	}
-	if m.SelectedFileId != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.SelectedFileId))
-	}
-	return n
-}
-
 func (m *KeyspaceMeta) Size() (n int) {
 	if m == nil {
 		return 0
@@ -4000,12 +3399,6 @@ func (m *KeyspaceMeta) Size() (n int) {
 			n += mapEntrySize + 1 + sovKeyspacepb(uint64(mapEntrySize))
 		}
 	}
-	if m.Generation != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.Generation))
-	}
-	if m.RestoreVersion != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.RestoreVersion))
-	}
 	return n
 }
 
@@ -4030,45 +3423,6 @@ func (m *KeyspaceMeta_KeyspaceIdentity) Size() (n int) {
 	}
 	return n
 }
-func (m *KeyspaceTask) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Phase != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.Phase))
-	}
-	if m.KeyspaceId != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.KeyspaceId))
-	}
-	if m.ExpectedGeneration != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.ExpectedGeneration))
-	}
-	if m.Generation != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.Generation))
-	}
-	if m.ExpectedRestoreVersion != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.ExpectedRestoreVersion))
-	}
-	if m.RestoreVersion != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.RestoreVersion))
-	}
-	if m.RegionId != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.RegionId))
-	}
-	if m.RegionVersion != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.RegionVersion))
-	}
-	if m.ConfVer != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.ConfVer))
-	}
-	if m.EncryptionMetaFileId != 0 {
-		n += 1 + sovKeyspacepb(uint64(m.EncryptionMetaFileId))
-	}
-	return n
-}
-
 func (m *NamespaceMeta) Size() (n int) {
 	if m == nil {
 		return 0
@@ -4356,10 +3710,6 @@ func (m *LoadKeyspaceResponse) Size() (n int) {
 		l = m.Keyspace.Size()
 		n += 1 + l + sovKeyspacepb(uint64(l))
 	}
-	if m.Task != nil {
-		l = m.Task.Size()
-		n += 1 + l + sovKeyspacepb(uint64(l))
-	}
 	return n
 }
 
@@ -4556,273 +3906,6 @@ func sovKeyspacepb(x uint64) (n int) {
 }
 func sozKeyspacepb(x uint64) (n int) {
 	return sovKeyspacepb(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *SelectKeyspaceEncryptionMetaFileRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowKeyspacepb
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: SelectKeyspaceEncryptionMetaFileRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: SelectKeyspaceEncryptionMetaFileRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Header == nil {
-				m.Header = &pdpb.RequestHeader{}
-			}
-			if err := m.Header.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field KeyspaceId", wireType)
-			}
-			m.KeyspaceId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.KeyspaceId |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Generation", wireType)
-			}
-			m.Generation = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Generation |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RestoreVersion", wireType)
-			}
-			m.RestoreVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.RestoreVersion |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field CandidateFileId", wireType)
-			}
-			m.CandidateFileId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.CandidateFileId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipKeyspacepb(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *SelectKeyspaceEncryptionMetaFileResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowKeyspacepb
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: SelectKeyspaceEncryptionMetaFileResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: SelectKeyspaceEncryptionMetaFileResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Header", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Header == nil {
-				m.Header = &pdpb.ResponseHeader{}
-			}
-			if err := m.Header.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SelectedFileId", wireType)
-			}
-			m.SelectedFileId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SelectedFileId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipKeyspacepb(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *KeyspaceMeta) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -5124,284 +4207,6 @@ func (m *KeyspaceMeta) Unmarshal(dAtA []byte) error {
 			}
 			m.Keyspace = &KeyspaceMeta_KeyspaceIdentity{v}
 			iNdEx = postIndex
-		case 9:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Generation", wireType)
-			}
-			m.Generation = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Generation |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 10:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RestoreVersion", wireType)
-			}
-			m.RestoreVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.RestoreVersion |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipKeyspacepb(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *KeyspaceTask) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowKeyspacepb
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: KeyspaceTask: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: KeyspaceTask: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Phase", wireType)
-			}
-			m.Phase = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Phase |= KeyspaceTaskPhase(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field KeyspaceId", wireType)
-			}
-			m.KeyspaceId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.KeyspaceId |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExpectedGeneration", wireType)
-			}
-			m.ExpectedGeneration = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ExpectedGeneration |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Generation", wireType)
-			}
-			m.Generation = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Generation |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExpectedRestoreVersion", wireType)
-			}
-			m.ExpectedRestoreVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ExpectedRestoreVersion |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RestoreVersion", wireType)
-			}
-			m.RestoreVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.RestoreVersion |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RegionId", wireType)
-			}
-			m.RegionId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.RegionId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 8:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RegionVersion", wireType)
-			}
-			m.RegionVersion = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.RegionVersion |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 9:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ConfVer", wireType)
-			}
-			m.ConfVer = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.ConfVer |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 10:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EncryptionMetaFileId", wireType)
-			}
-			m.EncryptionMetaFileId = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.EncryptionMetaFileId |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipKeyspacepb(dAtA[iNdEx:])
@@ -7321,42 +6126,6 @@ func (m *LoadKeyspaceResponse) Unmarshal(dAtA []byte) error {
 				m.Keyspace = &KeyspaceMeta{}
 			}
 			if err := m.Keyspace.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Task", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowKeyspacepb
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthKeyspacepb
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Task == nil {
-				m.Task = &KeyspaceTask{}
-			}
-			if err := m.Task.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

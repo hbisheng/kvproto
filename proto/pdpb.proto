@@ -531,6 +531,12 @@ message PeerStats {
   uint64 down_seconds = 2;
 }
 
+// Storage properties observed after Raft application. Missing means unknown.
+message RegionStorageState {
+  bool reclaim_ready = 1;
+  uint64 encryption_meta_file_id = 2;
+}
+
 message RegionHeartbeatRequest {
   RequestHeader header = 1;
 
@@ -579,6 +585,8 @@ message RegionHeartbeatRequest {
 
   // BucketMeta is the bucket version and keys of this region if TiKV enabled the bucket feature
   metapb.BucketMeta bucket_meta = 20;
+  // Actual locally applied state, paired with the Region epoch above.
+  RegionStorageState storage_state = 1200;
 }
 
 message ChangePeer {
@@ -626,26 +634,6 @@ message ChangeSplit {
   bool auto_split_enabled = 1;
 }
 
-// KeyspaceStateStatus reports one task-scoped peer's locally applied lineage.
-// PD accepts it only when the peer and Region still match current topology.
-message KeyspaceStateStatus {
-  uint64 region_id = 1;
-  uint64 peer_id = 2;
-  uint32 keyspace_id = 3;
-  uint64 generation = 4;
-  uint64 restore_version = 5;
-  uint64 region_version = 6;
-  uint64 conf_ver = 7;
-  uint64 encryption_meta_file_id = 8;
-  bool key_ready = 9;
-}
-
-// KeyspaceStateRequest asks one store to report a specific local peer state.
-message KeyspaceStateRequest {
-  uint64 region_id = 1;
-  uint32 keyspace_id = 2;
-}
-
 message RegionHeartbeatResponse {
   ResponseHeader header = 1;
 
@@ -683,9 +671,9 @@ message RegionHeartbeatResponse {
   ChangePeerV2 change_peer_v2 = 9;
   BatchSwitchWitness switch_witnesses = 10;
   ChangeSplit change_split = 11;
-  // Notification only. The target CSE pulls coherent metadata and task state
-  // with LoadKeyspaceByID before deciding whether any action is authorized.
-  bool keyspace_update_required = 1200;
+  // Notification only. TiKV loads current metadata with LoadKeyspaceByID
+  // and converges its local Region toward that desired state.
+  bool region_requires_update = 1200;
 }
 
 message AskSplitRequest {
@@ -840,13 +828,13 @@ message StoreStats {
   // True if the store is undergoing graceful shutdown.
   bool is_stopping = 32;
 
-  // Bounded per-peer applied states for tasks requested by PD.
-  repeated KeyspaceStateStatus keyspace_state_statuses = 1200;
-  // Store-side protocol capability used as a rollout admission gate.
-  bool keyspace_id_reuse_capable = 1201;
+  reserved 1200;
+  reserved 1201;
 
   // Reserved for a downstream fork
   reserved 1000 to 1199;
+  // Version 2 supports state-driven reclamation and property initialization.
+  uint32 keyspace_id_reuse_protocol_version = 1202;
 }
 
 message DfsStatScope {
@@ -976,8 +964,7 @@ message StoreHeartbeatResponse {
   ControlGrpc control_grpc = 7;
   // NodeState is going to mark the state of the store.
   metapb.NodeState state = 8;
-  // Bounded task-scoped requests; stores must not scan all local Regions.
-  repeated KeyspaceStateRequest keyspace_state_requests = 1200;
+  reserved 1200;
 }
 
 message ScatterRegionRequest {

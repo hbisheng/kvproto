@@ -76,7 +76,7 @@ message StoreHeartbeatRequest {
 message StoreHeartbeatResponse {
   ResponseHeader header = 1;
   string cluster_version = 2;
-  repeated pdpb.KeyspaceStateRequest keyspace_state_requests = 1200;
+  reserved 1200;
 }
 
 message RegionHeartbeatRequest {
@@ -148,7 +148,7 @@ message RegionHeartbeatResponse {
   pdpb.BatchSwitchWitness switch_witnesses = 10;
   pdpb.ChangeSplit change_split = 11;
   // Notification only; forwarding must preserve this field.
-  bool keyspace_update_required = 1200;
+  bool region_requires_update = 1200;
 }
 
 message ScatterRegionsRequest {
