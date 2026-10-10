@@ -48,6 +48,8 @@ message KeyspaceMeta {
   int64 state_changed_at = 5;
   map<string, string> config = 7;
   reserved 9, 10;
+  // Fixed RestoreShard version while a reused ID is DISABLED. Zero otherwise.
+  uint64 pending_reset_version = 11;
 }
 
 enum KeyspaceState {

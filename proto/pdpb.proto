@@ -533,8 +533,10 @@ message PeerStats {
 
 // Storage properties observed after Raft application. Missing means unknown.
 message RegionStorageState {
-  bool reclaim_ready = 1;
-  uint64 encryption_meta_file_id = 2;
+  // Actual applied shard restore version, reported in response to an update hint.
+  uint64 restore_version = 3;
+  reserved 1;
+  reserved 2;
 }
 
 message RegionHeartbeatRequest {
