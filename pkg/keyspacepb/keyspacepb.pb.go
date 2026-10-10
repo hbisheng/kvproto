@@ -37,7 +37,7 @@ const (
 	KeyspaceState_DISABLED  KeyspaceState = 1
 	KeyspaceState_ARCHIVED  KeyspaceState = 2
 	KeyspaceState_TOMBSTONE KeyspaceState = 3
-	// Internal reuse lifecycle; not accepted by UpdateKeyspaceState.
+	// Legacy POC values retained for decoding old metadata. Not used by ID reuse.
 	KeyspaceState_RECLAIMING KeyspaceState = 4
 	KeyspaceState_RECLAIMED  KeyspaceState = 5
 	KeyspaceState_CREATING   KeyspaceState = 6

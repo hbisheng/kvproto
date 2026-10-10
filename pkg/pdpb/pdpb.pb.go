@@ -4814,7 +4814,7 @@ type StoreStats struct {
 	Dfs []*DfsStatItem `protobuf:"bytes,31,rep,name=dfs,proto3" json:"dfs,omitempty"`
 	// True if the store is undergoing graceful shutdown.
 	IsStopping bool `protobuf:"varint,32,opt,name=is_stopping,json=isStopping,proto3" json:"is_stopping,omitempty"`
-	// Version 2 supports state-driven reclamation and property initialization.
+	// Reuse protocol implemented by the store. Fixed-version reset requires version 3.
 	KeyspaceIdReuseProtocolVersion uint32 `protobuf:"varint,1202,opt,name=keyspace_id_reuse_protocol_version,json=keyspaceIdReuseProtocolVersion,proto3" json:"keyspace_id_reuse_protocol_version,omitempty"`
 }
 

@@ -11072,26 +11072,6 @@
       "def": {
         "enums": [
           {
-            "name": "KeyspaceTaskPhase",
-            "enum_fields": [
-              {
-                "name": "KEYSPACE_TASK_NONE"
-              },
-              {
-                "name": "KEYSPACE_TASK_PREPARE_RECLAIM",
-                "integer": 1
-              },
-              {
-                "name": "KEYSPACE_TASK_RECLAIM",
-                "integer": 2
-              },
-              {
-                "name": "KEYSPACE_TASK_VALIDATE_REUSE",
-                "integer": 3
-              }
-            ]
-          },
-          {
             "name": "KeyspaceState",
             "enum_fields": [
               {
@@ -11108,56 +11088,23 @@
               {
                 "name": "TOMBSTONE",
                 "integer": 3
+              },
+              {
+                "name": "RECLAIMING",
+                "integer": 4
+              },
+              {
+                "name": "RECLAIMED",
+                "integer": 5
+              },
+              {
+                "name": "CREATING",
+                "integer": 6
               }
             ]
           }
         ],
         "messages": [
-          {
-            "name": "SelectKeyspaceEncryptionMetaFileRequest",
-            "fields": [
-              {
-                "id": 1,
-                "name": "header",
-                "type": "pdpb.RequestHeader"
-              },
-              {
-                "id": 2,
-                "name": "keyspace_id",
-                "type": "uint32"
-              },
-              {
-                "id": 3,
-                "name": "generation",
-                "type": "uint64"
-              },
-              {
-                "id": 4,
-                "name": "restore_version",
-                "type": "uint64"
-              },
-              {
-                "id": 5,
-                "name": "candidate_file_id",
-                "type": "uint64"
-              }
-            ]
-          },
-          {
-            "name": "SelectKeyspaceEncryptionMetaFileResponse",
-            "fields": [
-              {
-                "id": 1,
-                "name": "header",
-                "type": "pdpb.ResponseHeader"
-              },
-              {
-                "id": 2,
-                "name": "selected_file_id",
-                "type": "uint64"
-              }
-            ]
-          },
           {
             "name": "KeyspaceMeta",
             "fields": [
@@ -11194,13 +11141,8 @@
                 "type": "int64"
               },
               {
-                "id": 9,
-                "name": "generation",
-                "type": "uint64"
-              },
-              {
-                "id": 10,
-                "name": "restore_version",
+                "id": 11,
+                "name": "pending_reset_version",
                 "type": "uint64"
               }
             ],
@@ -11213,61 +11155,10 @@
                   "type": "string"
                 }
               }
-            ]
-          },
-          {
-            "name": "KeyspaceTask",
-            "fields": [
-              {
-                "id": 1,
-                "name": "phase",
-                "type": "KeyspaceTaskPhase"
-              },
-              {
-                "id": 2,
-                "name": "keyspace_id",
-                "type": "uint32"
-              },
-              {
-                "id": 3,
-                "name": "expected_generation",
-                "type": "uint64"
-              },
-              {
-                "id": 4,
-                "name": "generation",
-                "type": "uint64"
-              },
-              {
-                "id": 5,
-                "name": "expected_restore_version",
-                "type": "uint64"
-              },
-              {
-                "id": 6,
-                "name": "restore_version",
-                "type": "uint64"
-              },
-              {
-                "id": 7,
-                "name": "region_id",
-                "type": "uint64"
-              },
-              {
-                "id": 8,
-                "name": "region_version",
-                "type": "uint64"
-              },
-              {
-                "id": 9,
-                "name": "conf_ver",
-                "type": "uint64"
-              },
-              {
-                "id": 10,
-                "name": "encryption_meta_file_id",
-                "type": "uint64"
-              }
+            ],
+            "reserved_ids": [
+              9,
+              10
             ]
           },
           {
@@ -11522,12 +11413,10 @@
                 "id": 2,
                 "name": "keyspace",
                 "type": "KeyspaceMeta"
-              },
-              {
-                "id": 3,
-                "name": "task",
-                "type": "KeyspaceTask"
               }
+            ],
+            "reserved_ids": [
+              3
             ]
           },
           {
@@ -11737,11 +11626,6 @@
                 "name": "GetAllKeyspaces",
                 "in_type": "GetAllKeyspacesRequest",
                 "out_type": "GetAllKeyspacesResponse"
-              },
-              {
-                "name": "SelectKeyspaceEncryptionMetaFile",
-                "in_type": "SelectKeyspaceEncryptionMetaFileRequest",
-                "out_type": "SelectKeyspaceEncryptionMetaFileResponse"
               }
             ]
           }
@@ -18874,6 +18758,20 @@
             ]
           },
           {
+            "name": "RegionStorageState",
+            "fields": [
+              {
+                "id": 3,
+                "name": "restore_version",
+                "type": "uint64"
+              }
+            ],
+            "reserved_ids": [
+              1,
+              2
+            ]
+          },
+          {
             "name": "RegionHeartbeatRequest",
             "fields": [
               {
@@ -18988,6 +18886,11 @@
                 "id": 20,
                 "name": "bucket_meta",
                 "type": "metapb.BucketMeta"
+              },
+              {
+                "id": 1200,
+                "name": "storage_state",
+                "type": "RegionStorageState"
               }
             ],
             "reserved_ids": [
@@ -19099,71 +19002,6 @@
             ]
           },
           {
-            "name": "KeyspaceStateStatus",
-            "fields": [
-              {
-                "id": 1,
-                "name": "region_id",
-                "type": "uint64"
-              },
-              {
-                "id": 2,
-                "name": "peer_id",
-                "type": "uint64"
-              },
-              {
-                "id": 3,
-                "name": "keyspace_id",
-                "type": "uint32"
-              },
-              {
-                "id": 4,
-                "name": "generation",
-                "type": "uint64"
-              },
-              {
-                "id": 5,
-                "name": "restore_version",
-                "type": "uint64"
-              },
-              {
-                "id": 6,
-                "name": "region_version",
-                "type": "uint64"
-              },
-              {
-                "id": 7,
-                "name": "conf_ver",
-                "type": "uint64"
-              },
-              {
-                "id": 8,
-                "name": "encryption_meta_file_id",
-                "type": "uint64"
-              },
-              {
-                "id": 9,
-                "name": "key_ready",
-                "type": "bool"
-              }
-            ]
-          },
-          {
-            "name": "KeyspaceStateRequest",
-            "fields": [
-              {
-                "id": 1,
-                "name": "region_id",
-                "type": "uint64"
-              },
-              {
-                "id": 2,
-                "name": "keyspace_id",
-                "type": "uint32"
-              }
-            ]
-          },
-          {
             "name": "RegionHeartbeatResponse",
             "fields": [
               {
@@ -19223,7 +19061,7 @@
               },
               {
                 "id": 1200,
-                "name": "keyspace_update_required",
+                "name": "region_requires_update",
                 "type": "bool"
               }
             ]
@@ -19614,15 +19452,9 @@
                 "type": "bool"
               },
               {
-                "id": 1200,
-                "name": "keyspace_state_statuses",
-                "type": "KeyspaceStateStatus",
-                "is_repeated": true
-              },
-              {
-                "id": 1201,
-                "name": "keyspace_id_reuse_capable",
-                "type": "bool"
+                "id": 1202,
+                "name": "keyspace_id_reuse_protocol_version",
+                "type": "uint32"
               }
             ],
             "maps": [
@@ -19636,6 +19468,8 @@
               }
             ],
             "reserved_ids": [
+              1200,
+              1201,
               1000,
               1001,
               1002,
@@ -20157,13 +19991,10 @@
                 "id": 8,
                 "name": "state",
                 "type": "metapb.NodeState"
-              },
-              {
-                "id": 1200,
-                "name": "keyspace_state_requests",
-                "type": "KeyspaceStateRequest",
-                "is_repeated": true
               }
+            ],
+            "reserved_ids": [
+              1200
             ]
           },
           {
@@ -26461,13 +26292,10 @@
                 "id": 2,
                 "name": "cluster_version",
                 "type": "string"
-              },
-              {
-                "id": 1200,
-                "name": "keyspace_state_requests",
-                "type": "pdpb.KeyspaceStateRequest",
-                "is_repeated": true
               }
+            ],
+            "reserved_ids": [
+              1200
             ]
           },
           {
@@ -26612,7 +26440,7 @@
               },
               {
                 "id": 1200,
-                "name": "keyspace_update_required",
+                "name": "region_requires_update",
                 "type": "bool"
               }
             ]

@@ -835,7 +835,7 @@ message StoreStats {
 
   // Reserved for a downstream fork
   reserved 1000 to 1199;
-  // Version 2 supports state-driven reclamation and property initialization.
+  // Reuse protocol implemented by the store. Fixed-version reset requires version 3.
   uint32 keyspace_id_reuse_protocol_version = 1202;
 }
 
