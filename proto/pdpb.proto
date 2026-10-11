@@ -535,6 +535,8 @@ message PeerStats {
 message RegionStorageState {
   // Actual applied shard restore version, reported in response to an update hint.
   uint64 restore_version = 3;
+  // Whether the applied shard has an encryption key (legacy or metadata based).
+  bool encrypted = 4;
   reserved 1;
   reserved 2;
 }
@@ -902,6 +904,8 @@ message StoreHeartbeatRequest {
   // Detailed store report that is only filled up on PD's demand for online unsafe recovery.
   StoreReport store_report = 3;
   replication_modepb.StoreDRAutoSyncStatus dr_autosync_status = 4;
+  // Last ID-to-name cache revision applied by this Store.
+  uint64 keyspace_name_revision = 1201;
 }
 
 message DemoteFailedVoters {
@@ -966,6 +970,12 @@ message StoreHeartbeatResponse {
   ControlGrpc control_grpc = 7;
   // NodeState is going to mark the state of the store.
   metapb.NodeState state = 8;
+  // Cluster-wide ID-to-name cache revision. Changes invalidate every store cache.
+  uint64 keyspace_name_revision = 1201;
+  // IDs changed since the requested revision; unrelated cached names stay valid.
+  repeated uint32 invalidated_keyspace_ids = 1202;
+  // The bounded change history is unavailable (for example after PD restart).
+  bool invalidate_all_keyspace_names = 1203;
   reserved 1200;
 }
 
