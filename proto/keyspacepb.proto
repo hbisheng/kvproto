@@ -50,6 +50,9 @@ message KeyspaceMeta {
   reserved 9, 10;
   // Fixed RestoreShard version while a reused ID is DISABLED. Zero otherwise.
   uint64 pending_reset_version = 11;
+  // A reused Create is still initializing. Cleared on completion or Archive.
+  // Separate from pending_reset_version: the split path does not need a reset.
+  bool pending_initialization = 12;
 }
 
 enum KeyspaceState {
