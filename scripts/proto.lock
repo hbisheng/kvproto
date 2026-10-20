@@ -11141,9 +11141,9 @@
                 "type": "int64"
               },
               {
-                "id": 11,
-                "name": "pending_reset_version",
-                "type": "uint64"
+                "id": 12,
+                "name": "pending_initialization",
+                "type": "bool"
               }
             ],
             "maps": [
@@ -11158,7 +11158,8 @@
             ],
             "reserved_ids": [
               9,
-              10
+              10,
+              11
             ]
           },
           {
@@ -18761,11 +18762,6 @@
             "name": "RegionStorageState",
             "fields": [
               {
-                "id": 3,
-                "name": "restore_version",
-                "type": "uint64"
-              },
-              {
                 "id": 4,
                 "name": "encrypted",
                 "type": "bool"
@@ -18773,7 +18769,8 @@
             ],
             "reserved_ids": [
               1,
-              2
+              2,
+              3
             ]
           },
           {
@@ -19063,12 +19060,10 @@
                 "id": 11,
                 "name": "change_split",
                 "type": "ChangeSplit"
-              },
-              {
-                "id": 1200,
-                "name": "region_requires_update",
-                "type": "bool"
               }
+            ],
+            "reserved_ids": [
+              1200
             ]
           },
           {

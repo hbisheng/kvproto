@@ -533,12 +533,9 @@ message PeerStats {
 
 // Storage properties observed after Raft application. Missing means unknown.
 message RegionStorageState {
-  // Actual applied shard restore version, reported in response to an update hint.
-  uint64 restore_version = 3;
   // Whether the applied shard has an encryption key (legacy or metadata based).
   bool encrypted = 4;
-  reserved 1;
-  reserved 2;
+  reserved 1, 2, 3;
 }
 
 message RegionHeartbeatRequest {
@@ -675,9 +672,7 @@ message RegionHeartbeatResponse {
   ChangePeerV2 change_peer_v2 = 9;
   BatchSwitchWitness switch_witnesses = 10;
   ChangeSplit change_split = 11;
-  // Notification only. TiKV loads current metadata with LoadKeyspaceByID
-  // and converges its local Region toward that desired state.
-  bool region_requires_update = 1200;
+  reserved 1200;
 }
 
 message AskSplitRequest {
@@ -837,7 +832,7 @@ message StoreStats {
 
   // Reserved for a downstream fork
   reserved 1000 to 1199;
-  // Reuse protocol implemented by the store. Fixed-version reset requires version 3.
+  // Reuse protocol implemented by the store. Split-only initialization requires version 5.
   uint32 keyspace_id_reuse_protocol_version = 1202;
 }
 

@@ -47,11 +47,8 @@ message KeyspaceMeta {
   int64 created_at = 4;
   int64 state_changed_at = 5;
   map<string, string> config = 7;
-  reserved 9, 10;
-  // Fixed RestoreShard version while a reused ID is DISABLED. Zero otherwise.
-  uint64 pending_reset_version = 11;
+  reserved 9, 10, 11;
   // A reused Create is still initializing. Cleared on completion or Archive.
-  // Separate from pending_reset_version: the split path does not need a reset.
   bool pending_initialization = 12;
 }
 
