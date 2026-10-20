@@ -57,10 +57,7 @@ enum KeyspaceState {
   DISABLED = 1;
   ARCHIVED = 2;
   TOMBSTONE = 3;
-  // Legacy POC values retained for decoding old metadata. Not used by ID reuse.
-  RECLAIMING = 4;
-  RECLAIMED = 5;
-  CREATING = 6;
+  reserved 4 to 6;
 }
 
 message NamespaceMeta {

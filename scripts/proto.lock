@@ -11088,19 +11088,12 @@
               {
                 "name": "TOMBSTONE",
                 "integer": 3
-              },
-              {
-                "name": "RECLAIMING",
-                "integer": 4
-              },
-              {
-                "name": "RECLAIMED",
-                "integer": 5
-              },
-              {
-                "name": "CREATING",
-                "integer": 6
               }
+            ],
+            "reserved_ids": [
+              4,
+              5,
+              6
             ]
           }
         ],
@@ -18759,21 +18752,6 @@
             ]
           },
           {
-            "name": "RegionStorageState",
-            "fields": [
-              {
-                "id": 4,
-                "name": "encrypted",
-                "type": "bool"
-              }
-            ],
-            "reserved_ids": [
-              1,
-              2,
-              3
-            ]
-          },
-          {
             "name": "RegionHeartbeatRequest",
             "fields": [
               {
@@ -18888,15 +18866,11 @@
                 "id": 20,
                 "name": "bucket_meta",
                 "type": "metapb.BucketMeta"
-              },
-              {
-                "id": 1200,
-                "name": "storage_state",
-                "type": "RegionStorageState"
               }
             ],
             "reserved_ids": [
-              11
+              11,
+              1200
             ]
           },
           {
@@ -26458,12 +26432,10 @@
                 "id": 11,
                 "name": "change_split",
                 "type": "pdpb.ChangeSplit"
-              },
-              {
-                "id": 1200,
-                "name": "region_requires_update",
-                "type": "bool"
               }
+            ],
+            "reserved_ids": [
+              1200
             ]
           },
           {

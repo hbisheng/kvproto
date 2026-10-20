@@ -147,8 +147,7 @@ message RegionHeartbeatResponse {
   pdpb.ChangePeerV2 change_peer_v2 = 9;
   pdpb.BatchSwitchWitness switch_witnesses = 10;
   pdpb.ChangeSplit change_split = 11;
-  // Notification only; forwarding must preserve this field.
-  bool region_requires_update = 1200;
+  reserved 1200;
 }
 
 message ScatterRegionsRequest {

@@ -531,13 +531,6 @@ message PeerStats {
   uint64 down_seconds = 2;
 }
 
-// Storage properties observed after Raft application. Missing means unknown.
-message RegionStorageState {
-  // Whether the applied shard has an encryption key (legacy or metadata based).
-  bool encrypted = 4;
-  reserved 1, 2, 3;
-}
-
 message RegionHeartbeatRequest {
   RequestHeader header = 1;
 
@@ -586,8 +579,7 @@ message RegionHeartbeatRequest {
 
   // BucketMeta is the bucket version and keys of this region if TiKV enabled the bucket feature
   metapb.BucketMeta bucket_meta = 20;
-  // Actual locally applied state, paired with the Region epoch above.
-  RegionStorageState storage_state = 1200;
+  reserved 1200;
 }
 
 message ChangePeer {
@@ -832,7 +824,7 @@ message StoreStats {
 
   // Reserved for a downstream fork
   reserved 1000 to 1199;
-  // Reuse protocol implemented by the store. Split-only initialization requires version 5.
+  // Reuse protocol implemented by the store. Split initialization reads keyspace configuration after split ID allocation in version 6.
   uint32 keyspace_id_reuse_protocol_version = 1202;
 }
 
