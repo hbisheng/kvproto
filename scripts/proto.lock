@@ -11132,11 +11132,6 @@
                 "id": 5,
                 "name": "state_changed_at",
                 "type": "int64"
-              },
-              {
-                "id": 12,
-                "name": "pending_initialization",
-                "type": "bool"
               }
             ],
             "maps": [
@@ -11152,7 +11147,8 @@
             "reserved_ids": [
               9,
               10,
-              11
+              11,
+              12
             ]
           },
           {

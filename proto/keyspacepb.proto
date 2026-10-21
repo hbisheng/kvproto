@@ -47,9 +47,7 @@ message KeyspaceMeta {
   int64 created_at = 4;
   int64 state_changed_at = 5;
   map<string, string> config = 7;
-  reserved 9, 10, 11;
-  // A reused Create is still initializing. Cleared on completion or Archive.
-  bool pending_initialization = 12;
+  reserved 9, 10, 11, 12;
 }
 
 enum KeyspaceState {
