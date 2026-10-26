@@ -579,7 +579,6 @@ message RegionHeartbeatRequest {
 
   // BucketMeta is the bucket version and keys of this region if TiKV enabled the bucket feature
   metapb.BucketMeta bucket_meta = 20;
-  reserved 1200;
 }
 
 message ChangePeer {
@@ -664,7 +663,6 @@ message RegionHeartbeatResponse {
   ChangePeerV2 change_peer_v2 = 9;
   BatchSwitchWitness switch_witnesses = 10;
   ChangeSplit change_split = 11;
-  reserved 1200;
 }
 
 message AskSplitRequest {
@@ -819,13 +817,8 @@ message StoreStats {
   // True if the store is undergoing graceful shutdown.
   bool is_stopping = 32;
 
-  reserved 1200;
-  reserved 1201;
-
   // Reserved for a downstream fork
   reserved 1000 to 1199;
-  // Reuse protocol implemented by the store. Split initialization reads keyspace configuration after split ID allocation in version 6.
-  uint32 keyspace_id_reuse_protocol_version = 1202;
 }
 
 message DfsStatScope {
@@ -891,7 +884,6 @@ message StoreHeartbeatRequest {
   // Detailed store report that is only filled up on PD's demand for online unsafe recovery.
   StoreReport store_report = 3;
   replication_modepb.StoreDRAutoSyncStatus dr_autosync_status = 4;
-  reserved 1201;
 }
 
 message DemoteFailedVoters {
@@ -956,7 +948,6 @@ message StoreHeartbeatResponse {
   ControlGrpc control_grpc = 7;
   // NodeState is going to mark the state of the store.
   metapb.NodeState state = 8;
-  reserved 1200, 1201, 1202, 1203;
 }
 
 message ScatterRegionRequest {

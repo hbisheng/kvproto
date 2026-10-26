@@ -47,7 +47,6 @@ message KeyspaceMeta {
   int64 created_at = 4;
   int64 state_changed_at = 5;
   map<string, string> config = 7;
-  reserved 9, 10, 11, 12;
 }
 
 enum KeyspaceState {
@@ -55,7 +54,6 @@ enum KeyspaceState {
   DISABLED = 1;
   ARCHIVED = 2;
   TOMBSTONE = 3;
-  reserved 4 to 6;
 }
 
 message NamespaceMeta {
@@ -139,7 +137,6 @@ message LoadKeyspaceByIDRequest {
 message LoadKeyspaceResponse {
   pdpb.ResponseHeader header = 1;
   KeyspaceMeta keyspace = 2;
-  reserved 3;
 }
 
 message LookupKeyspaceRequest {

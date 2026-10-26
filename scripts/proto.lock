@@ -11089,11 +11089,6 @@
                 "name": "TOMBSTONE",
                 "integer": 3
               }
-            ],
-            "reserved_ids": [
-              4,
-              5,
-              6
             ]
           }
         ],
@@ -11143,12 +11138,6 @@
                   "type": "string"
                 }
               }
-            ],
-            "reserved_ids": [
-              9,
-              10,
-              11,
-              12
             ]
           },
           {
@@ -11404,9 +11393,6 @@
                 "name": "keyspace",
                 "type": "KeyspaceMeta"
               }
-            ],
-            "reserved_ids": [
-              3
             ]
           },
           {
@@ -18865,8 +18851,7 @@
               }
             ],
             "reserved_ids": [
-              11,
-              1200
+              11
             ]
           },
           {
@@ -19031,9 +19016,6 @@
                 "name": "change_split",
                 "type": "ChangeSplit"
               }
-            ],
-            "reserved_ids": [
-              1200
             ]
           },
           {
@@ -19420,11 +19402,6 @@
                 "id": 32,
                 "name": "is_stopping",
                 "type": "bool"
-              },
-              {
-                "id": 1202,
-                "name": "keyspace_id_reuse_protocol_version",
-                "type": "uint32"
               }
             ],
             "maps": [
@@ -19438,8 +19415,6 @@
               }
             ],
             "reserved_ids": [
-              1200,
-              1201,
               1000,
               1001,
               1002,
@@ -19812,9 +19787,6 @@
                 "name": "dr_autosync_status",
                 "type": "replication_modepb.StoreDRAutoSyncStatus"
               }
-            ],
-            "reserved_ids": [
-              1201
             ]
           },
           {
@@ -19965,12 +19937,6 @@
                 "name": "state",
                 "type": "metapb.NodeState"
               }
-            ],
-            "reserved_ids": [
-              1200,
-              1201,
-              1202,
-              1203
             ]
           },
           {
@@ -26269,9 +26235,6 @@
                 "name": "cluster_version",
                 "type": "string"
               }
-            ],
-            "reserved_ids": [
-              1200
             ]
           },
           {
@@ -26414,9 +26377,6 @@
                 "name": "change_split",
                 "type": "pdpb.ChangeSplit"
               }
-            ],
-            "reserved_ids": [
-              1200
             ]
           },
           {
