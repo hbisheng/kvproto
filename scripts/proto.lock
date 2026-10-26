@@ -19811,12 +19811,10 @@
                 "id": 4,
                 "name": "dr_autosync_status",
                 "type": "replication_modepb.StoreDRAutoSyncStatus"
-              },
-              {
-                "id": 1201,
-                "name": "keyspace_name_revision",
-                "type": "uint64"
               }
+            ],
+            "reserved_ids": [
+              1201
             ]
           },
           {
@@ -19966,26 +19964,13 @@
                 "id": 8,
                 "name": "state",
                 "type": "metapb.NodeState"
-              },
-              {
-                "id": 1201,
-                "name": "keyspace_name_revision",
-                "type": "uint64"
-              },
-              {
-                "id": 1202,
-                "name": "invalidated_keyspace_ids",
-                "type": "uint32",
-                "is_repeated": true
-              },
-              {
-                "id": 1203,
-                "name": "invalidate_all_keyspace_names",
-                "type": "bool"
               }
             ],
             "reserved_ids": [
-              1200
+              1200,
+              1201,
+              1202,
+              1203
             ]
           },
           {
